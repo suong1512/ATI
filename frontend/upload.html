@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fc">
+    <title>Smart Document Processing — Hóa đơn</title>
+    <link rel="stylesheet" href="./upload.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <a class="brand" href="#upload" aria-label="Smart Document Processing — tải hóa đơn">
+          <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24">
+              <path d="M7 3.75h7l4 4v12.5H7a2 2 0 0 1-2-2v-12a2 2 0 0 1 2-2Z"/>
+              <path d="M14 3.75v4h4M9 12h7M9 15h7M9 9h2"/>
+            </svg>
+          </span>
+          <span>
+            <strong>Smart Document Processing</strong>
+            <small>Trích xuất hóa đơn</small>
+          </span>
+        </a>
+
+        <button class="button button-primary sidebar-upload" type="button" data-open-picker>
+          <span aria-hidden="true">＋</span> Tải lên tài liệu mới
+        </button>
+
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <a class="nav-link active" href="#upload">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 3.75h8l5 5v11.5H6z"/>
+              <path d="M14 3.75v5h5M12.5 17v-6m-2.5 2.5 2.5-2.5 2.5 2.5"/>
+            </svg>
+            Tải lên
+          </a>
+          <a class="nav-link" href="#queue">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 5H5v14h10"/>
+              <path d="M8 3h8v4H8z"/>
+              <path d="M15.5 15.5 19 19"/>
+              <circle cx="16.5" cy="16.5" r="4.5"/>
+              <path d="M16.5 14v2.7l1.7 1"/>
+            </svg>
+            Trạng thái xử lý
+          </a>
+          <a class="nav-link" href="#recent">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 8V4m0 4h4"/>
+              <path d="M4.8 8a9 9 0 1 1-.3 7"/>
+              <path d="M12 7v5l3 2"/>
+            </svg>
+            Lịch sử hóa đơn
+          </a>
+        </nav>
+
+        <div class="sidebar-bottom">
+          <p class="sidebar-note">Bản thử nghiệm<br>Hóa đơn lưu trong tệp JSON cục bộ.</p>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input id="history-search" type="search" placeholder="Tìm theo tệp, số hóa đơn hoặc người bán..." aria-label="Tìm hóa đơn trong lịch sử" disabled>
+          </label>
+          <span class="prototype-label">Bản thử nghiệm · Gemini</span>
+        </header>
+
+        <div class="page-content">
+          <section class="page-heading">
+            <div>
+              <h1>Tải lên và trích xuất hóa đơn</h1>
+              <p>Chọn hóa đơn PDF hoặc ảnh. Tệp sẽ được gửi tới Google Gemini để trích xuất dữ liệu.</p>
+            </div>
+            <div class="model-status"><span class="status-dot"></span><span>Nhà cung cấp: Gemini</span></div>
+          </section>
+
+          <section class="stats-grid" aria-label="Thống kê hôm nay">
+            <article class="stat-card">
+              <div>
+                <span class="stat-label">Đã trích xuất hôm nay</span>
+                <strong><span id="stat-today">0</span> <small>tài liệu</small></strong>
+              </div>
+              <span class="stat-icon stat-success" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="m8 12 2.5 2.5L16 9"/>
+                </svg>
+              </span>
+            </article>
+            <article class="stat-card">
+              <div>
+                <span class="stat-label">Đang xử lý</span>
+                <strong class="blue-text"><span id="stat-pending">0</span> <small>tài liệu</small></strong>
+              </div>
+              <span class="stat-icon stat-pending" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M12 7v5l3 2"/>
+                </svg>
+              </span>
+            </article>
+            <article class="stat-card">
+              <div>
+                <span class="stat-label">Lỗi tải lên</span>
+                <strong class="red-text"><span id="stat-invalid">0</span> <small>phiên này</small></strong>
+              </div>
+              <span class="stat-icon stat-error" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="9"/>
+                  <path d="M12 7.5v5.5M12 16.5h.01"/>
+                </svg>
+              </span>
+            </article>
+            <article class="stat-card">
+              <div>
+                <span class="stat-label">Độ tin cậy trung bình</span>
+                <strong><span id="stat-confidence">—</span> <small class="green-text" id="confidence-caption"></small></strong>
+              </div>
+              <span class="stat-icon stat-ai" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d="m12 2.5 2.3 1.4 2.7-.2.8 2.6 2.2 1.5-.8 2.7.8 2.7-2.2 1.5-.8 2.6-2.7-.2L12 20.5l-2.3-1.4-2.7.2-.8-2.6L4 15.2l.8-2.7L4 9.8l2.2-1.5.8-2.6 2.7.2z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              </span>
+            </article>
+          </section>
+
+          <div class="alert alert-error" id="upload-alert" role="alert" hidden>
+            <span class="alert-symbol" aria-hidden="true">⊗</span>
+            <p id="upload-alert-message"></p>
+            <button class="button button-small button-outline" type="button" data-open-picker>Thử lại</button>
+            <button class="dismiss-button" type="button" aria-label="Đóng thông báo">×</button>
+          </div>
+
+          <section class="upload-card" id="upload" aria-label="Tải tài liệu lên">
+            <div class="dropzone" id="dropzone" role="group" aria-label="Khu vực tải hóa đơn lên" aria-describedby="drop-help">
+              <input id="file-input" class="visually-hidden" type="file" accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+              <span class="cloud-icon" aria-hidden="true">
+                <svg viewBox="0 0 32 32">
+                  <path d="M9.5 23.5a6.5 6.5 0 0 1-.4-13A8.5 8.5 0 0 1 25.5 13a5.5 5.5 0 0 1-.5 11"/>
+                  <path d="M16 25V15m0 0-4 4m4-4 4 4"/>
+                </svg>
+              </span>
+              <p class="drop-title">Kéo và thả tệp vào đây, hoặc <button class="inline-link" type="button" data-open-picker>Nhấp để chọn tệp từ máy tính</button></p>
+              <p class="drop-hint" id="drop-help">Hỗ trợ PDF, JPG, PNG · Tối đa 10 MB mỗi tệp</p>
+              <p class="selected-file" id="selected-file" aria-live="polite"></p>
+              <div class="upload-actions">
+                <button class="button button-primary browse-button" type="button" data-open-picker>
+                  <svg class="upload-action-icon" aria-hidden="true" viewBox="0 0 20 20">
+                    <path d="M2.5 5.5h6l1.8 2h7.2v8.8H2.5z"/>
+                    <path d="m5 13 1.2-3.2h7.6L15 13"/>
+                  </svg>
+                  Duyệt tệp từ thiết bị
+                </button>
+              </div>
+              <div class="upload-benefits">
+                <span>
+                  <svg class="benefit-icon benefit-shield" aria-hidden="true" viewBox="0 0 20 20">
+                    <path d="M10 2.2 16.5 4.5v4.8c0 4.1-2.7 6.8-6.5 8.5-3.8-1.7-6.5-4.4-6.5-8.5V4.5z"/>
+                  </svg>
+                  Tệp được gửi tới Google Gemini
+                </span>
+                <b>·</b>
+                <span>
+                  <svg class="benefit-icon benefit-sparkle" aria-hidden="true" viewBox="0 0 20 20">
+                    <path d="M7 2.2 8.5 7 13 8.5l-4.5 1.6L7 15l-1.5-4.9L1 8.5 5.5 7zM15 10.5l1.1 3.1 2.9 1.1-2.9 1.1L15 19l-1.1-3.2-2.9-1.1 2.9-1.1zM15 1v5M12.5 3.5h5"/>
+                  </svg>
+                  Hỗ trợ PDF và ảnh hóa đơn
+                </span>
+                <b>·</b>
+                <span>
+                  <svg class="benefit-icon benefit-layers" aria-hidden="true" viewBox="0 0 20 20">
+                    <path d="m10 2.5 7 4-7 4-7-4zM3 10l7 4 7-4M3 13.5l7 4 7-4"/>
+                  </svg>
+                  Lưu tối đa 50 chứng từ gần nhất
+                </span>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel queue-panel" id="queue">
+            <header class="panel-heading">
+              <h2>
+                <svg class="heading-icon" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M20 7h-5V2"/>
+                  <path d="M4 17h5v5"/>
+                  <path d="M5.6 9a7 7 0 0 1 11.6-3L20 7"/>
+                  <path d="M18.4 15a7 7 0 0 1-11.6 3L4 17"/>
+                </svg>
+                Tiến trình xử lý hiện tại
+                <span class="queue-count" id="queue-count">0 tệp đang xử lý</span>
+              </h2>
+            </header>
+            <div id="queue-content" aria-live="polite"><p class="queue-empty">Chưa có tài liệu đang xử lý.</p></div>
+          </section>
+
+          <section class="panel extraction-result" id="extraction-result" aria-live="polite" hidden>
+            <header class="panel-heading recent-heading">
+              <div>
+                <h2>Kết quả trích xuất</h2>
+                <p id="extraction-summary"></p>
+              </div>
+              <button class="button button-outline" id="download-extraction-json" type="button">Tải JSON</button>
+            </header>
+            <div class="extraction-content" id="extraction-content"></div>
+            <details class="raw-json">
+              <summary>Xem dữ liệu JSON</summary>
+              <pre id="extraction-json"></pre>
+            </details>
+          </section>
+
+          <section class="panel recent-panel" id="recent">
+            <header class="panel-heading recent-heading">
+              <div>
+                <h2>Hóa đơn đã lưu</h2>
+                <p id="history-description">Lịch sử lưu cục bộ, tối đa 50 bản ghi gần nhất</p>
+              </div>
+              <div class="history-actions">
+                <span class="history-count" id="history-count">0 hóa đơn</span>
+                <button class="text-button" id="refresh-button" type="button">Làm mới</button>
+                <button class="text-button destructive-button" id="clear-history" type="button" disabled>Xóa tất cả</button>
+              </div>
+            </header>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>TÊN TÀI LIỆU</th>
+                    <th>ĐỊNH DẠNG</th>
+                    <th>NGƯỜI BÁN</th>
+                    <th>TỔNG TIỀN<br>(VND)</th>
+                    <th>ĐỘ TIN CẬY</th>
+                    <th>TRẠNG THÁI</th>
+                    <th>CHI TIẾT</th>
+                  </tr>
+                </thead>
+                <tbody id="invoice-history">
+                  <tr><td colspan="7">Đang tải dữ liệu...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <script src="./upload.js" defer></script>
+  </body>
+</html>

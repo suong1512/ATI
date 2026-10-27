@@ -1,8 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Mock extraction returns mocked invoice JSON, no external API keys required.
-  // Keep the default server behaviour; no extra configuration needed for the prototype.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
+  serverExternalPackages: ["@napi-rs/canvas"],
 };
 
 export default nextConfig;

@@ -5,12 +5,10 @@ import type { DocumentKind, ExtractionResult, Invoice, LineItem } from "./invoic
 export { ACCEPTED_MIME_TYPES, MAX_FILE_SIZE_BYTES } from "./uploadConfig";
 
 /**
- * Mock invoice extraction.
+ * Legacy deterministic mock invoice extraction.
  *
- * The real project goal is to send the uploaded file to a Multimodal LLM and get
- * structured JSON back (see `project_details.md`). Until an API key/model is
- * chosen, this module produces a *mock* result with exactly the same JSON shape,
- * so the UI, the API contract and the storage layer are already real.
+ * The live upload API uses `geminiExtractor.ts`; this helper remains available
+ * for legacy/demo use and shared document metadata detection.
  *
  * The mock is *derived from the uploaded file*:
  *  - magic bytes decide the real document kind (pdf / png / jpeg)

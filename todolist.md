@@ -1,6 +1,94 @@
 # Todolist
 
-Last updated: 30/09/2026 · Active task: **TASK-30-09** (details: `state/task_30_09_state.md`)
+Last updated: 26/10/2026 · Active task: **TASK-STAGE2-26-10**
+
+## TASK-STAGE2-26-10 — Dual-branch extraction
+
+### Plan
+
+- [x] Record the request and confirm local Tesseract OCR plus optional OCR JSON output.
+- [x] Preserve the existing Gemini model setting while allowing a configurable model list.
+- [ ] Implement OCR for prepared images and PDF pages with text, word boxes and confidence.
+- [ ] Run OCR and configured Gemini Vision model(s) concurrently on the same prepared input.
+- [ ] Keep the current invoice fields and older stored records compatible.
+- [ ] Add focused tests for image/PDF OCR and configurable model branch output.
+- [ ] Update architecture, API, configuration and feature documentation.
+- [ ] Run typecheck, lint, build and local checks without sending an actual invoice to Gemini.
+- [ ] Create a safe checkpoint only if task changes can be separated from the dirty worktree.
+
+## TASK-PREPROCESS-26-10 — Stage 1 document preprocessing
+
+## TASK-PREPROCESS-26-10 — Stage 1 document preprocessing
+
+### Plan
+
+- [x] Preserve the human request and create a task state file.
+- [x] Read the extraction flow, JSON contract, storage, and project knowledge.
+- [x] Add server-side image preprocessing while keeping PDF input unchanged.
+- [x] Verify image transformations, PDF pass-through and explicit malformed-image error.
+- [x] Run typecheck, lint, build and API error mapping checks without a live Gemini request.
+- [x] Update architecture/API/environment/feature documentation with accurate behavior.
+- [ ] Create a safe checkpoint if changes can be attributed without including unrelated work.
+
+### Validation
+
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run build`
+- [x] Focused tests for PNG/JPEG resize and JPEG output, PDF pass-through and invalid image.
+- [x] No live Gemini request; transformations were validated with synthetic local images only.
+
+## TASK-UI-26-10 — Align web UI with implemented features
+
+### Plan
+
+- [x] Read `frontend/`, `components/`, `knowledge/`, and related API/task documentation.
+- [x] Record the request and create a task-state handoff file.
+- [x] Remove or correct controls and claims for features that do not exist.
+- [x] Make history search, upload states, navigation and record-detail links clear and usable.
+- [x] Keep UI implementation changes focused in `frontend/`; only adjust wrapper titles and workflow documentation outside it.
+- [x] Validate frontend scripts, typecheck, lint and production build.
+- [x] Update `features.md`, `state/taskSummary.md`, and this checklist with results.
+- [ ] Complete interactive browser checks; do not upload an invoice without explicit approval because it is sent to Google Gemini.
+- [ ] Create a task checkpoint if changes are attributable without including unrelated work.
+
+### Validation
+
+- [x] `node --check frontend/upload.js`
+- [x] `node --check frontend/detail.js`
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] `npm run build`
+- [x] Browser snapshot of dashboard and loaded invoice history.
+- [ ] Interactive check of search, reset confirmation and history-to-detail navigation.
+
+## TASK-GEMINI-25-10 — Gemini invoice extraction
+
+### Done
+
+- [x] Integrate server-side Gemini extraction for PDF/PNG/JPEG uploads.
+- [x] Keep the Gemini API key server-only and return explicit errors without mock fallback.
+- [x] Validate extracted invoice data with the shared Zod contract before saving.
+- [x] Update the dashboard and project documentation.
+- [x] Add the invoice detail page and history links.
+- [x] Serve the dashboard/detail directly from `frontend/` through Next.js routes; remove duplicate `public/` assets.
+- [x] Extract dashboard and detail scripts to `frontend/upload.js` and `frontend/detail.js`.
+
+### Validation
+
+- [x] `npm run typecheck`
+- [x] `npm run lint`
+- [x] Dashboard, upload, detail, and query-string detail routes return HTTP 200.
+- [x] Dashboard, upload, detail, CSS, and JavaScript routes return HTTP 200.
+- [x] Upload and detail JavaScript syntax checks pass.
+- [x] API smoke test without a key returns HTTP 503 `GEMINI_NOT_CONFIGURED`, never mock data.
+- [x] Mocked-provider checks: valid invoice parsing, PDF payload encoding, and incomplete-data rejection.
+- [x] `npm run build`
+- [ ] Verify populated invoice details by opening a saved record from history; creating a new record requires a user-provided key in `.env.local`.
+
+### Human setup required
+
+- [ ] Add `GEMINI_API_KEY` to `.env.local`, restart `npm run dev`, and upload a readable invoice.
 
 ## TASK-30-09 — Submission box + mock invoice data
 
@@ -28,9 +116,9 @@ Last updated: 30/09/2026 · Active task: **TASK-30-09** (details: `state/task_30
 - [ ] Git checkpoint commit
 - [ ] Then update `state/task_30_09_state.md` (status → COMPLETED) and this file
 
-### After TASK-30-09 (needs a human decision)
+### Follow-up work
 
-- [ ] Choose the Multimodal LLM provider + API key → replace the mock extraction
+- [x] Choose Gemini as the provider; live testing still needs a local API key.
 - [ ] Replace the JSON file store with Prisma + SQLite (`project_details.md`)
 - [ ] Authentication + department RBAC
 - [ ] Automated tests (no test runner configured yet)

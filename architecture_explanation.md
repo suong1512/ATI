@@ -2,32 +2,35 @@
 
 > **Source of truth for the architecture is `knowledge/architecture.md`.**
 > This file is the short version required by `agents.md` and must stay consistent with it.
-> Last updated: 30/09/2026 — describes the **actual** implementation (the LLM step is mocked).
-> Validation status: `npm install`, typecheck, lint and 7 `curl` API cases PASS; browser click-through and a
-> full `npm run build` are pending — evidence in `state/task_30_09_state.md` §5.
+> Last updated: 26/10/2026 — preprocessing feeds local OCR and Gemini Vision branches.
+> Validation status: Stage 2 implementation is being validated; live Vision calls require a user API key
+> and approval to send a real document.
 
 ## 1. System Overview
 
 A single Next.js (App Router) fullstack prototype. The browser renders one page with a submission box;
-the server (Next.js API routes, Node runtime) validates the upload, produces structured invoice JSON,
-validates it with Zod and stores it in a JSON file that stands in for the database.
+the server (Next.js API routes, Node runtime) validates the upload, preprocesses images, then runs
+local Tesseract OCR and configured Gemini Vision model(s) concurrently. OCR evidence and structured
+invoice JSON are validated with Zod and stored in a JSON file that stands in for the database.
 
 | Layer | Implementation |
 | --- | --- |
-| Client | `app/page.tsx` + `components/UploadBox.tsx` / `InvoiceResult.tsx` / `InvoiceHistory.tsx` |
+| Client | `app/page.tsx` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js` full-screen at `/`; Next.js serves the source files at their matching root URLs |
 | Server | `app/api/extract/route.ts`, `app/api/invoices/route.ts` |
-| Domain logic | `lib/mockExtractor.ts` (extraction), `lib/invoiceSchema.ts` (contract), `lib/uploadConfig.ts` (upload rules) |
+| Domain logic | `lib/documentPreprocessing.ts` (Sharp image preparation), `lib/documentOcr.ts` (local OCR/PDF rendering), `lib/geminiExtractor.ts` (dual branches), `lib/invoiceSchema.ts` (contract), `lib/uploadConfig.ts` (upload rules) |
 | Storage | `lib/invoiceStore.ts` → `data/invoices.json` (mock database) |
-| External APIs | **None** (the Multimodal LLM call is not implemented) |
+| External APIs | Google Gemini API; only the Vision branch transmits documents. OCR runs locally; OCR language data may be downloaded on first use |
 
 ## 2. Data Flow
 
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant P as page.tsx
+    participant P as Browser dashboard
     participant R as /api/extract
-    participant X as mockExtractor
+    participant S as Sharp preprocessing
+    participant O as Local Tesseract OCR
+    participant X as Gemini API
     participant Z as Zod schema
     participant D as data/invoices.json
 
@@ -35,12 +38,20 @@ sequenceDiagram
     P->>P: validateUploadFile() (type, size)
     P->>R: POST multipart/form-data (file)
     R->>R: size + magic-byte validation
-    R->>X: mockExtract(buffer, name, type, size)
-    X-->>R: ExtractionResult (provider = "mock")
-    R->>Z: safeParse(result)
+    R->>S: prepare document after Gemini configuration check
+    Note over S: PDF unchanged; images auto-oriented, resized to fit 2400×3200 without upscaling, flattened white and JPEG-encoded at quality 92
+    S-->>R: prepared bytes + MIME type
+    par Local OCR branch
+        R->>O: prepared image or rendered PDF pages
+        O-->>R: page text, word boxes and confidence
+    and Gemini Vision branch(es)
+        R->>X: prepared document + configured models
+        X-->>R: invoice JSON per model
+    end
+    R->>Z: validate invoice and extraction evidence
     R->>D: append record (max 50)
     R-->>P: 200 { ok: true, data }
-    P->>U: invoice card + raw JSON
+    P->>U: dashboard displays extraction status and saved history
     P->>R: GET /api/invoices
 ```
 
@@ -48,7 +59,7 @@ sequenceDiagram
 
 | Decision | Reason |
 | --- | --- |
-| Mock extraction behind the real Zod contract | Builds and demos the full pipeline now; a real LLM call replaces `mockExtract()` without touching the UI |
+| Gemini extraction behind the Zod contract | Provider output is validated before storage; incomplete results are rejected instead of being guessed |
 | Zod as the single response contract | Matches the "Structured Output Validation" goal in `project_details.md` |
 | JSON file store instead of Prisma/SQLite | Zero dependencies, no migration risk; Prisma/SQLite is the documented next step |
 | Client-safe constants in `lib/uploadConfig.ts` | `lib/mockExtractor.ts` / `lib/invoiceStore.ts` use Node APIs and must stay server-only |
@@ -56,18 +67,17 @@ sequenceDiagram
 
 ## 4. External APIs and Credentials
 
-* **Currently none** — the project runs without any API key.
-* Planned: Multimodal LLM (OpenAI / OpenRouter / Gemini) with the key stored in `.env.local` (gitignored).
-  This requires a human decision about provider, cost and quota (see `knowledge/apiDocs.md` §6).
+* `GEMINI_API_KEY` is stored in `.env.local` (gitignored) and is never sent to the browser.
+* OCR runs locally. Uploaded PDF bytes and preprocessed PNG/JPEG bytes are transmitted to Google's Gemini API; check privacy, quota and pricing requirements before use.
 
 ## 5. Demo Flow
 
 ```text
 git clone → open in DevContainer → npm install → npm run dev
  http://localhost:3000
- drag samples/sample-invoice.pdf into the submission box → "Tải lên & trích xuất"
- invoice card + line items + totals + raw JSON
- "3. Hóa đơn đã lưu" shows the stored record → "Tải file JSON" exports it
+ add GEMINI_API_KEY to .env.local → upload a readable invoice
+ Gemini extracts real document contents and saves invoice JSON
+ dashboard history and statistics show the saved result
 ```
 
 Step-by-step manual tests: `features.md`. Environment: `knowledge/configuration.md`.

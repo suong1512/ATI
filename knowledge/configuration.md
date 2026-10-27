@@ -3,7 +3,7 @@
 > Environment, devcontainer and machine information for this project.
 > Only information that affects development is recorded here.
 > Related: `architecture.md` (stack) · `projectOverview.md` (context)
-> Last updated: 30/09/2026
+> Last updated: 25/10/2026
 
 ---
 
@@ -62,6 +62,7 @@ EXPOSE 3000
 | Next.js | 15.5.26 | `package.json` |
 | React / React DOM | 19.1.0 | `package.json` |
 | Zod | ^4.6.5 | `package.json` |
+| Sharp | ^0.35.5 | Server-side preprocessing for uploaded PNG/JPEG images; PDFs pass through unchanged |
 | TypeScript | ^5 | `package.json` |
 | ESLint | ^9 + `eslint-config-next` 15.5.26 + `@eslint/eslintrc` ^3 | `package.json` / `eslint.config.mjs` |
 | `@types/node` | ^20 | `package.json` |
@@ -88,23 +89,41 @@ Options (pick one, needs a decision before `npm run lint` can be trusted):
 
 | Variable | Required now? | Purpose |
 | --- | --- | --- |
-| — | — | The current implementation needs **no** environment variable |
+| `GEMINI_API_KEY` | Yes, for extraction | Gemini API key; server-side only, never expose it in frontend code or commit it |
+| `GEMINI_MODEL` | No | Optional Gemini model override; defaults to `gemini-3.8-flash` |
+| `GEMINI_MODELS` | No | Comma-separated Vision model list; overrides `GEMINI_MODEL` and allows multiple model branches |
+| `TESSERACT_LANGUAGES` | No | Tesseract language codes joined with `+`; defaults to `vie+eng` |
+| `TESSERACT_LANG_PATH` | No | Optional local directory or URL containing Tesseract language data; default Tesseract data source is used otherwise |
+| `TESSERACT_CACHE_PATH` | No | Optional cache override; defaults to a per-user directory under the OS temporary folder |
 
-Future (only when the real LLM integration is approved) — put them in `.env.local`, which is gitignored, and never commit secrets:
+Create `.env.local` in the repository root and add:
 
 ```text
-# example only — none of these are currently used
-OPENAI_API_KEY=...
-OPENROUTER_API_KEY=...
-GOOGLE_GENERATIVE_AI_API_KEY=...
+GEMINI_API_KEY=your-key-from-aistudio
+# GEMINI_MODEL=gemini-3.8-flash
+# GEMINI_MODELS=gemini-3.8-flash,gemini-3.6-flash
+# TESSERACT_LANGUAGES=vie+eng
 ```
+
+Get a key from <https://aistudio.google.com/apikey>. Never send the key in chat or commit `.env.local`.
+Uploaded invoice files are sent to Google's Gemini API for extraction; do not upload documents unless
+your organization allows this data sharing. Without the key, `POST /api/extract` returns
+`GEMINI_NOT_CONFIGURED` and does not generate mock invoice values.
+
+OCR is executed locally by Tesseract. The first OCR request may download language data for
+`TESSERACT_LANGUAGES`; this downloads the OCR model only, not the uploaded document. Language data
+is cached outside the repository under the OS temporary folder by default. For offline environments,
+set `TESSERACT_LANG_PATH` to a directory containing the corresponding trained data.
+PDF pages are rendered locally for OCR; PDF bytes sent to Gemini remain unchanged.
+Next.js keeps `@napi-rs/canvas` external to webpack so its native Node binding can load at runtime.
 
 ---
 
 ## 5. External Services Required for Development
 
-**None.** No database server, no message queue, no API key.
-The mock database is the file `data/invoices.json`, created at runtime and gitignored.
+Invoice extraction requires internet access and a Gemini API key. The dashboard can load without the key,
+but `POST /api/extract` returns `GEMINI_NOT_CONFIGURED` until it is set.
+The local JSON file `data/invoices.json` is used for invoice history; no separate database server is needed.
 
 ---
 
@@ -114,8 +133,10 @@ The mock database is the file `data/invoices.json`, created at runtime and gitig
 # 1. install dependencies
 npm install
 
-# 2. start the dev server (http://localhost:3000)
+# 2. start the app and API server
 npm run dev
+# App: http://localhost:3000
+# Dashboard integrated with the API: http://localhost:3000/
 
 # 3. validation
 npm run typecheck    # tsc --noEmit

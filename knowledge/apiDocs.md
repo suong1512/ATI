@@ -1,9 +1,9 @@
 # API Documentation
 
 > Internal API exposed by the Next.js App Router (`app/api/**`).
-> **No external API is called** in the current implementation — the extraction step is mocked.
+> `POST /api/extract` runs local OCR and sends prepared documents to Google's Gemini API; Vision requires `GEMINI_API_KEY`.
 > Response contract source of truth: `lib/invoiceSchema.ts`.
-> Last updated: 30/09/2026
+> Last updated: 26/10/2026
 
 ---
 
@@ -40,7 +40,7 @@ Error:
 
 ## 2. `POST /api/extract`
 
-Upload one invoice document; the server returns the structured extraction result and stores it in the mock database.
+Upload one invoice document; the server prepares the input, runs OCR and configured Gemini Vision model(s) concurrently, validates the combined extraction result, then stores it in the local JSON file store.
 
 ### Request
 
@@ -54,7 +54,15 @@ Server-side validation order:
 2. size must be > 0 (`EMPTY_FILE`)
 3. size must be ≤ 10 MB (`FILE_TOO_LARGE`)
 4. magic bytes must be `%PDF-` / `89 50 4E 47` / `FF D8 FF`; otherwise the reported mime type is used as fallback (`UNSUPPORTED_TYPE`)
-5. the generated result is validated by `extractionResultSchema` (`SCHEMA_MISMATCH`)
+5. PDF bytes pass through unchanged; PNG/JPEG images are auto-oriented using EXIF, resized to fit 2400×3200 without upscaling, flattened on white and encoded as JPEG quality 92.
+6. OCR runs locally using Tesseract (`TESSERACT_LANGUAGES`, default `vie+eng`). PDF pages are rendered locally for OCR (maximum 50 pages); each page includes text, word bounding boxes in pixels, and confidence scores.
+7. The same prepared document is sent concurrently to each configured Gemini Vision model. `GEMINI_MODELS` is a comma-separated model list; if unset, the existing `GEMINI_MODEL` (or default) is used.
+8. Each Vision result and OCR evidence are validated by `extractionResultSchema` before storage. The first configured Vision result populates the existing `invoice` and `extraction` fields; `extraction.visionModels` preserves all model outputs and `extraction.ocr` contains OCR evidence. No consensus or reconciliation is performed in this stage.
+
+The response's `source.fileName`, `source.mimeType`, `source.sizeBytes`, `source.kind`, `source.estimatedPages`,
+and `source.contentHash` describe the **original upload**. Image conversion is temporary. OCR is local;
+only the prepared PDF/image is sent to Gemini. `extraction.ocr` and `extraction.visionModels` are
+optional additions, so existing records and required invoice fields remain compatible.
 
 ### Success response — `200`
 
@@ -91,21 +99,48 @@ Server-side validation order:
       "totalAmount": 654500
     },
     "extraction": {
-      "provider": "mock",
-      "model": "mock-invoice-extractor-v1",
-      "processingMs": 4,
-      "confidence": 0.86,
-      "warnings": [
-        "Dữ liệu mô phỏng (mock) — chưa gọi Multimodal LLM thật.",
-        "PDF có khoảng 2 trang; mock chỉ mô phỏng trích xuất trang đầu tiên."
-      ]
+      "provider": "gemini",
+      "model": "gemini-3.8-flash",
+      "processingMs": 1200,
+      "confidence": 0.93,
+      "warnings": []
     }
   },
   "meta": { "processingMs": 12 }
 }
 ```
 
-> Example values are illustrative; the exact numbers depend on the uploaded bytes (deterministic hash seed).
+> Example values are illustrative; actual results depend on the contents and legibility of the uploaded document.
+
+The `data.extraction` object also has these Stage 2 fields:
+
+```json
+{
+  "ocr": {
+    "provider": "tesseract",
+    "languages": "vie+eng",
+    "processingMs": 4200,
+    "text": "recognized page text",
+    "pages": [{
+      "pageNumber": 1,
+      "width": 1600,
+      "height": 2200,
+      "confidence": 0.91,
+      "text": "recognized page text",
+      "words": [{ "text": "HÓA", "confidence": 0.96, "bbox": { "x0": 20, "y0": 30, "x1": 90, "y1": 70 } }]
+    }]
+  },
+  "visionModels": [{
+    "model": "gemini-3.8-flash",
+    "invoice": { "...": "same invoice schema as data.invoice" },
+    "confidence": 0.93,
+    "warnings": []
+  }]
+}
+```
+
+Bounding-box coordinates are pixels in the rendered/prepared page. Older stored records may omit
+`ocr` and `visionModels`; these fields are optional for backward compatibility.
 
 ### Error responses
 
@@ -115,7 +150,16 @@ Server-side validation order:
 | 400 | `EMPTY_FILE` | 0-byte file |
 | 413 | `FILE_TOO_LARGE` | file > 10 MB |
 | 415 | `UNSUPPORTED_TYPE` | not a PDF/PNG/JPEG |
-| 500 | `SCHEMA_MISMATCH` | generated result does not satisfy the Zod contract |
+| 422 | `DOCUMENT_PREPROCESSING_FAILED` | image bytes cannot be decoded or prepared |
+| 413 | `OCR_PAGE_LIMIT_EXCEEDED` | PDF has more than 50 pages for OCR |
+| 503 | `OCR_NOT_AVAILABLE` | Tesseract worker or local OCR language data could not be initialized |
+| 422 | `PDF_RENDER_FAILED` | PDF cannot be read or rendered for the OCR branch |
+| 500 | `OCR_CONFIGURATION_INVALID` / `GEMINI_MODEL_CONFIGURATION_INVALID` | invalid configured language or Vision model list |
+| 422 | `INCOMPLETE_EXTRACTION` | Gemini could not read all required invoice fields |
+| 429 | `GEMINI_RATE_LIMITED` | Gemini quota or rate limit |
+| 502 | `GEMINI_AUTH_ERROR` / `GEMINI_PROVIDER_ERROR` | invalid key or provider failure; unexpected provider HTTP status is included in the message and server log (status/model only) |
+| 503 | `GEMINI_NOT_CONFIGURED` | `GEMINI_API_KEY` is not set |
+| 504 | `GEMINI_TIMEOUT` | Gemini did not respond within 60 seconds |
 | 500 | `INTERNAL_ERROR` | unexpected server error (logged to the server console) |
 
 ### cURL examples
@@ -163,7 +207,7 @@ curl -s -X DELETE http://localhost:3000/api/invoices
 | Field | Type | Notes |
 | --- | --- | --- |
 | `recordId` | string | `inv_<hash>_<base36 time>` |
-| `createdAt` | string (ISO) | when the mock extraction ran |
+| `createdAt` | string (ISO) | when extraction ran |
 | `source.fileName` | string | original upload name |
 | `source.mimeType` | string | reported mime type |
 | `source.sizeBytes` | number | upload size |
@@ -171,11 +215,11 @@ curl -s -X DELETE http://localhost:3000/api/invoices
 | `source.estimatedPages` | number | heuristic for PDFs, always 1 for images |
 | `source.contentHash` | string(16) | first 16 hex chars of the SHA-256 of the bytes |
 | `invoice.*` | object | invoice number, serial, issue date, seller/buyer, currency, `lineItems[]`, subtotal, taxRate, taxAmount, totalAmount |
-| `extraction.provider` | literal `"mock"` | will become the real provider name (e.g. `openai`) |
-| `extraction.model` | string | `mock-invoice-extractor-v1` |
-| `extraction.processingMs` | number | mock processing duration |
-| `extraction.confidence` | number 0–1 | random-but-deterministic mock value |
-| `extraction.warnings` | string[] | tells the user the data is mock / multi-page limitation |
+| `extraction.provider` | `"gemini"` \| `"mock"` | new API results use Gemini; mock is retained for older records |
+| `extraction.model` | string | Gemini model; default `gemini-3.8-flash` |
+| `extraction.processingMs` | number | time spent extracting |
+| `extraction.confidence` | number 0–1 | Gemini's estimate, not a calibrated guarantee |
+| `extraction.warnings` | string[] | extraction caveats returned by Gemini |
 
 The authoritative field list and constraints: `lib/invoiceSchema.ts`.
 
@@ -186,16 +230,15 @@ The authoritative field list and constraints: `lib/invoiceSchema.ts`.
 * **No authentication / authorization.** Any client can upload, read and delete stored records.
 * **No rate limiting** and no file persistence of the uploaded document itself (only the extracted JSON is stored).
 * The mock database is a JSON file: single-process only; concurrent writes are not protected; not suitable for serverless deployment.
-* The uploaded bytes are **not** interpreted as content (no OCR, no text extraction), so the mock values are not the real values printed on the invoice.
-* Nothing is sent to an external service, therefore there is no quota, cost or data-privacy exposure today.
+* Uploaded invoice files are transmitted to Google's Gemini API. Review privacy, terms, quota and pricing before sending real invoices.
 
-### Planned external integration (not implemented)
+### Gemini integration
 
-| Item | Plan |
+| Item | Value |
 | --- | --- |
-| Provider | OpenAI / OpenRouter / Gemini (Multimodal) |
-| Call site | `app/api/extract/route.ts` (replace `mockExtract()`) |
-| Method | Structured Outputs with the existing Zod schema (e.g. AI SDK `generateObject`) |
-| Credentials | Provider API key in `.env.local` (never committed) |
-| Payload | base64 of the uploaded PDF/image |
-| Blocked by | Provider choice + API key + quota approval → requires human decision |
+| Provider | Gemini multimodal `generateContent` |
+| Model | `gemini-3.8-flash` by default; override with `GEMINI_MODEL` |
+| Call site | `lib/geminiExtractor.ts`, called from `app/api/extract/route.ts` |
+| Credentials | `GEMINI_API_KEY` in ignored `.env.local`; never commit or expose in frontend |
+| Payload | Base64-encoded uploaded PDF/image; transmitted to Google |
+| Validation | Shared Zod invoice contract is checked before storage |

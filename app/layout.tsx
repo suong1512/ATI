@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Smart Document Processing — Invoice Extraction",
-  description: "Upload a PDF/PNG/JPEG invoice and view the extracted structured JSON data.",
+  title: "Smart Document Processing — Hóa đơn",
+  description: "Tải lên chứng từ, xem dữ liệu trích xuất và lịch sử hóa đơn.",
 };
 
 export default function RootLayout({

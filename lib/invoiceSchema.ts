@@ -4,9 +4,7 @@ import { z } from "zod";
  * Zod contract for the extracted invoice data.
  *
  * This schema is the single source of truth for the JSON shape returned by
- * `POST /api/extract`. It is written so that the current mock extractor
- * (`lib/mockExtractor.ts`) and a future real Multimodal LLM call can be
- * validated with exactly the same contract.
+ * `POST /api/extract`. Gemini output and legacy mock records use this contract.
  */
 
 export const lineItemSchema = z.object({
@@ -36,6 +34,26 @@ export const invoiceSchema = z.object({
 
 export const documentKindSchema = z.enum(["pdf", "png", "jpeg"]);
 
+export const ocrWordSchema = z.object({
+  text: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+  bbox: z.object({
+    x0: z.number().nonnegative(),
+    y0: z.number().nonnegative(),
+    x1: z.number().nonnegative(),
+    y1: z.number().nonnegative(),
+  }),
+});
+
+export const ocrPageSchema = z.object({
+  pageNumber: z.number().int().positive(),
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+  confidence: z.number().min(0).max(1),
+  text: z.string(),
+  words: z.array(ocrWordSchema),
+});
+
 export const extractionResultSchema = z.object({
   recordId: z.string().min(1),
   createdAt: z.string().min(1),
@@ -49,15 +67,29 @@ export const extractionResultSchema = z.object({
   }),
   invoice: invoiceSchema,
   extraction: z.object({
-    provider: z.literal("mock"),
+    provider: z.enum(["mock", "gemini"]),
     model: z.string().min(1),
     processingMs: z.number().nonnegative(),
     confidence: z.number().min(0).max(1),
     warnings: z.array(z.string()),
+    ocr: z.object({
+      provider: z.literal("tesseract"),
+      languages: z.string().min(1),
+      processingMs: z.number().nonnegative(),
+      text: z.string(),
+      pages: z.array(ocrPageSchema).min(1),
+    }).optional(),
+    visionModels: z.array(z.object({
+      model: z.string().min(1),
+      invoice: invoiceSchema,
+      confidence: z.number().min(0).max(1),
+      warnings: z.array(z.string()),
+    })).optional(),
   }),
 });
 
 export type LineItem = z.infer<typeof lineItemSchema>;
 export type Invoice = z.infer<typeof invoiceSchema>;
 export type DocumentKind = z.infer<typeof documentKindSchema>;
+export type OcrPage = z.infer<typeof ocrPageSchema>;
 export type ExtractionResult = z.infer<typeof extractionResultSchema>;
