@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       return withCors(jsonError(500, "SCHEMA_MISMATCH", "Kết quả trích xuất không khớp schema.", parsed.error.issues.map(String)));
     }
 
-    await saveInvoice(parsed.data);
+    await saveInvoice(parsed.data, buffer);
 
     return withCors(Response.json(
       { ok: true, data: parsed.data, meta: { processingMs: Date.now() - startedAt } },

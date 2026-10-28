@@ -1,6 +1,14 @@
 # Todolist
 
-Last updated: 26/10/2026 · Active task: **TASK-STAGE2-26-10**
+Last updated: 28/10/2026 · Active task: **TASK-DOCUMENT-PREVIEW-28-10**
+
+## TASK-DOCUMENT-PREVIEW-28-10 — Original invoice preview
+
+- [x] Store uploaded originals separately in MongoDB.
+- [x] Add an endpoint to retrieve a saved original document.
+- [x] Preview uploaded images and PDFs on the invoice detail page.
+- [x] Document the storage and API behavior.
+- [x] Run typecheck, lint, build, frontend syntax validation and production HTTP smoke checks.
 
 ## TASK-STAGE2-26-10 — Dual-branch extraction
 

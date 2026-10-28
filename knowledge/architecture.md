@@ -42,7 +42,7 @@ ATI_PhAnh_group/
    ├── geminiExtractor.ts         # Gemini multimodal extraction (server only)
    ├── mockExtractor.ts           # Document-kind detection and legacy mock helpers
    ├── database.ts                # MariaDB pool and MongoDB connection
-   ├── invoiceStore.ts            # MariaDB invoice index + MongoDB extraction payloads
+   ├── invoiceStore.ts            # MariaDB index + MongoDB extraction payloads and originals
    ├── uploadConfig.ts            # Shared upload rules (client-safe, no Node imports)
    └── format.ts                  # VND / bytes / date / percent formatting
  scripts/make-sample-pdf.mjs    # Generates samples/sample-invoice.pdf (test fixture)
@@ -84,7 +84,7 @@ ATI_PhAnh_group/
 | --- | --- | --- |
 | Home page | `app/page.tsx` | Displays the full-screen dashboard |
 | Dashboard | `frontend/upload.html` + `frontend/upload.css` + `frontend/upload.js` | Upload UI, statistics and history; calls same-origin API routes |
-| Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Fetches selected record from `GET /api/invoices` using `recordId` and renders extracted fields |
+| Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Fetches selected record and original PDF/image using its `recordId` |
 | Legacy React components | `components/` | Alternative upload, result and history components; dashboard at `/` uses the static frontend |
 | Upload rules | `lib/uploadConfig.ts` | Accepted types/extensions, 10 MB limit, `validateUploadFile()` used by the browser |
 | Schema | `lib/invoiceSchema.ts` | Zod schemas + TypeScript types for `ExtractionResult` |
@@ -93,9 +93,10 @@ ATI_PhAnh_group/
 | Dual-branch extraction | `lib/geminiExtractor.ts` | Runs local OCR and one or more configured Gemini Vision models concurrently; stores OCR evidence and all model outputs |
 | Document metadata | `lib/mockExtractor.ts` | Magic-byte kind detection and PDF page estimate |
 | Database connections | `lib/database.ts` | Shared MariaDB pool and MongoDB connection from server-side environment variables |
-| Invoice store | `lib/invoiceStore.ts` | `listInvoices` / `saveInvoice` / `clearInvoices` across MariaDB and MongoDB |
+| Invoice store | `lib/invoiceStore.ts` | `listInvoices` / `saveInvoice` / `getInvoiceDocument` / `clearInvoices` across MariaDB and MongoDB |
 | API: extract | `app/api/extract/route.ts` | Validates the upload, runs the extractor, validates with Zod, stores, returns JSON |
 | API: invoices | `app/api/invoices/route.ts` | Lists stored invoices / resets invoice records in both databases |
+| API: original document | `app/api/invoices/[recordId]/document/route.ts` | Returns a saved original PDF/image for the detail-page preview |
 
 ---
 

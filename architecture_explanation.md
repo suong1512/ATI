@@ -2,7 +2,7 @@
 
 > **Source of truth for the architecture is `knowledge/architecture.md`.**
 > This file is the short version required by `agents.md` and must stay consistent with it.
-> Last updated: 26/10/2026 — preprocessing feeds local OCR and Gemini Vision branches.
+> Last updated: 28/10/2026 — extraction stores the original document for invoice detail previews.
 > Validation status: Stage 2 implementation is being validated; live Vision calls require a user API key
 > and approval to send a real document.
 
@@ -16,9 +16,9 @@ invoice JSON are validated with Zod, indexed in MariaDB, and stored as a complet
 | Layer | Implementation |
 | --- | --- |
 | Client | `app/page.tsx` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js` full-screen at `/`; Next.js serves the source files at their matching root URLs |
-| Server | `app/api/extract/route.ts`, `app/api/invoices/route.ts` |
+| Server | `app/api/extract/route.ts`, `app/api/invoices/route.ts`, `app/api/invoices/[recordId]/document/route.ts` |
 | Domain logic | `lib/documentPreprocessing.ts` (Sharp image preparation), `lib/documentOcr.ts` (local OCR/PDF rendering), `lib/geminiExtractor.ts` (dual branches), `lib/invoiceSchema.ts` (contract), `lib/uploadConfig.ts` (upload rules) |
-| Storage | `lib/invoiceStore.ts` → MariaDB `Extracted_Invoice` index + MongoDB `Extraction_Records` payloads |
+| Storage | `lib/invoiceStore.ts` → MariaDB `Extracted_Invoice` index + MongoDB `Extraction_Records` payloads and `Invoice_Documents` originals |
 | External APIs | Google Gemini API; only the Vision branch transmits documents. OCR runs locally; OCR language data may be downloaded on first use |
 
 ## 2. Data Flow
@@ -34,6 +34,8 @@ sequenceDiagram
     participant Z as Zod schema
     participant M as MariaDB
     participant D as MongoDB
+    participant F as MongoDB Invoice_Documents
+    participant I as Invoice document API
 
     U->>P: chọn file (PDF/PNG/JPEG)
     P->>P: validateUploadFile() (type, size)
@@ -52,9 +54,14 @@ sequenceDiagram
     R->>Z: validate invoice and extraction evidence
     R->>M: save invoice metadata
     R->>D: save complete ExtractionResult payload
+    R->>F: save original uploaded document
     R-->>P: 200 { ok: true, data }
     P->>U: dashboard displays extraction status and saved history
     P->>R: GET /api/invoices
+    P->>I: GET original document for selected invoice
+    I->>F: load original bytes
+    F-->>I: original PDF/image
+    I-->>P: inline document response
 ```
 
 ## 3. Important Architectural Decisions

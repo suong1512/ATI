@@ -430,6 +430,46 @@ td {
     font-size: 19px;
   }
 
+  .document-panel {
+    margin-bottom: 16px;
+  }
+
+  .document-header {
+    justify-content: space-between;
+  }
+
+  .document-header a {
+    color: var(--blue);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .document-preview-image {
+    display: block;
+    width: 100%;
+    max-height: 820px;
+    object-fit: contain;
+    background: #f9faff;
+    padding: 14px;
+  }
+
+  .document-preview-pdf {
+    display: block;
+    width: 100%;
+    height: min(820px, 85vh);
+    border: 0;
+    background: #f9faff;
+  }
+
+  .document-preview-message {
+    padding: 16px;
+    color: var(--muted);
+  }
+
+  .document-preview-image[hidden], .document-preview-pdf[hidden], .document-preview-message[hidden] {
+    display: none;
+  }
+
   .party-grid {
     grid-template-columns: 1fr;
     gap: 10px;

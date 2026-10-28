@@ -11,6 +11,12 @@ type InvoiceIndexRow = RowDataPacket & {
   record_id: string;
 };
 
+type StoredInvoiceDocument = {
+  _id: string;
+  mimeType: string;
+  data: Buffer | { value(asRaw?: boolean): Uint8Array };
+};
+
 export class InvoiceStoreError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
@@ -50,6 +56,7 @@ async function getStorage() {
   return {
     pool,
     collection: mongoDatabase.collection<ExtractionResult & { _id: string }>(MONGO_COLLECTION),
+    documents: mongoDatabase.collection<StoredInvoiceDocument>("Invoice_Documents"),
   };
 }
 
@@ -90,16 +97,26 @@ export async function listInvoices(): Promise<ExtractionResult[]> {
   }
 }
 
-export async function saveInvoice(record: ExtractionResult): Promise<ExtractionResult> {
+export async function saveInvoice(
+  record: ExtractionResult,
+  originalDocument: Buffer,
+): Promise<ExtractionResult> {
   try {
-    const { pool, collection } = await getStorage();
-    await collection.replaceOne(
-      { _id: record.recordId },
-      record,
-      { upsert: true },
-    );
-
+    const { pool, collection, documents } = await getStorage();
     try {
+      await collection.replaceOne(
+        { _id: record.recordId },
+        record,
+        { upsert: true },
+      );
+      await documents.replaceOne(
+        { _id: record.recordId },
+        {
+          mimeType: documentMimeType(record.source.kind),
+          data: originalDocument,
+        },
+        { upsert: true },
+      );
       await pool.execute(
         `INSERT INTO Extracted_Invoice
           (record_id, created_at, file_name, mime_type, file_size, document_kind,
@@ -119,11 +136,15 @@ export async function saveInvoice(record: ExtractionResult): Promise<ExtractionR
         ],
       );
     } catch (error) {
-      try {
-        await collection.deleteOne({ _id: record.recordId });
-      } catch (cleanupError) {
-        console.error("[invoiceStore] Failed to remove MongoDB payload after SQL insert failed.", cleanupError);
-      }
+      const cleanupResults = await Promise.allSettled([
+        collection.deleteOne({ _id: record.recordId }),
+        documents.deleteOne({ _id: record.recordId }),
+      ]);
+      cleanupResults.forEach((result) => {
+        if (result.status === "rejected") {
+          console.error("[invoiceStore] Failed to remove MongoDB records after invoice save failed.", result.reason);
+        }
+      });
       throw error;
     }
 
@@ -133,11 +154,42 @@ export async function saveInvoice(record: ExtractionResult): Promise<ExtractionR
   }
 }
 
+function documentMimeType(kind: ExtractionResult["source"]["kind"]) {
+  switch (kind) {
+    case "pdf":
+      return "application/pdf";
+    case "png":
+      return "image/png";
+    case "jpeg":
+      return "image/jpeg";
+  }
+}
+
+export async function getInvoiceDocument(recordId: string) {
+  try {
+    const { documents } = await getStorage();
+    const document = await documents.findOne({ _id: recordId });
+    if (!document) {
+      return null;
+    }
+
+    return {
+      mimeType: document.mimeType,
+      data: Buffer.isBuffer(document.data)
+        ? document.data
+        : Buffer.from(document.data.value(true)),
+    };
+  } catch (error) {
+    throw new InvoiceStoreError("Unable to read the original invoice document.", { cause: error });
+  }
+}
+
 export async function clearInvoices(): Promise<number> {
   try {
-    const { pool, collection } = await getStorage();
+    const { pool, collection, documents } = await getStorage();
     const [result] = await pool.execute<ResultSetHeader>("DELETE FROM Extracted_Invoice");
     await collection.deleteMany({});
+    await documents.deleteMany({});
     return result.affectedRows;
   } catch (error) {
     throw new InvoiceStoreError("Unable to clear invoices from the database.", { cause: error });

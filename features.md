@@ -3,7 +3,7 @@
 > User-visible functionality of the project.
 > Status vocabulary: **Working · Partial · Mocked · In-Progress · Blocked**.
 > Architecture: `knowledge/architecture.md` · API details: `knowledge/apiDocs.md`
-> Last updated: 26/10/2026.
+> Last updated: 28/10/2026.
 > `Working` = verified end-to-end at HTTP/data level · `Partial` = verified at API/data level, UI not
 > click-tested in a browser yet · `Mocked` = works, but the data is simulated.
 > Evidence: `state/task_30_09_state.md` §5 and `state/task_26_10_ui_state.md` §5.
@@ -40,10 +40,10 @@
 
 ## F-03 — Invoice details page
 
-* **Description:** Selecting an invoice in the history opens `detail.html?id=<recordId>`, which fetches that saved extraction and shows the seller/buyer, invoice identifiers, line items, subtotal, tax, total, extraction confidence, warnings and JSON download.
-* **How to test:** after F-02, use *Xem chi tiết* in the invoice history and compare the rendered values with the source document.
-* **Expected result:** only the selected invoice is shown; a missing or deleted record displays an explicit message.
-* **Status:** Partial — detail view and record lookup are implemented. A Gemini key is only required to create new invoices; existing saved records can be opened from history.
+* **Description:** Selecting an invoice in the history opens `detail.html?id=<recordId>`, which shows the extracted fields and an inline preview of the saved original image or PDF, with a link to open the original document.
+* **How to test:** upload an image or PDF after configuring Gemini, open it using *Xem chi tiết*, and compare the preview with the extracted values.
+* **Expected result:** the selected invoice and its original document are shown; older records without a stored original display a clear notice.
+* **Status:** Partial — save/retrieve and preview code is implemented; end-to-end preview still needs verification with a configured database and a new upload.
 
 ## F-04 — Stored invoices (MariaDB + MongoDB) + reset
 

@@ -3,7 +3,7 @@
 > Internal API exposed by the Next.js App Router (`app/api/**`).
 > `POST /api/extract` runs local OCR and sends prepared documents to Google's Gemini API; Vision requires `GEMINI_API_KEY`.
 > Response contract source of truth: `lib/invoiceSchema.ts`.
-> Last updated: 26/10/2026
+> Last updated: 28/10/2026
 
 ---
 
@@ -190,9 +190,19 @@ curl -s http://localhost:3000/api/invoices
 { "ok": true, "count": 1, "data": [ /* ExtractionResult[] */ ] }
 ```
 
+## 4. `GET /api/invoices/:recordId/document`
+
+Returns the original uploaded PDF, PNG or JPEG with its detected media type for inline preview.
+The original is stored separately from invoice extraction payloads in MongoDB's `Invoice_Documents`
+collection. Records created before original-document storage was added return HTTP 404.
+
+```bash
+curl -i http://localhost:3000/api/invoices/<recordId>/document
+```
+
 ---
 
-## 4. `DELETE /api/invoices`
+## 5. `DELETE /api/invoices`
 
 Deletes invoice records from MariaDB and their payloads from MongoDB. Intended for demos/tests.
 
@@ -203,7 +213,7 @@ curl -s -X DELETE http://localhost:3000/api/invoices
 
 ---
 
-## 5. Response Object Reference (`ExtractionResult`)
+## 6. Response Object Reference (`ExtractionResult`)
 
 | Field | Type | Notes |
 | --- | --- | --- |
