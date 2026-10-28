@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.100",
+    "mongoose": "^8.24.7",
+    "mysql2": "^3.24.6",
     "next": "15.5.26",
     "pdfjs-dist": "^4.10.38",
     "react": "19.1.0",

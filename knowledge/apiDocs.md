@@ -40,7 +40,7 @@ Error:
 
 ## 2. `POST /api/extract`
 
-Upload one invoice document; the server prepares the input, runs OCR and configured Gemini Vision model(s) concurrently, validates the combined extraction result, then stores it in the local JSON file store.
+Upload one invoice document; the server prepares the input, runs OCR and configured Gemini Vision model(s) concurrently, validates the combined extraction result, then stores its metadata in MariaDB and full payload in MongoDB.
 
 ### Request
 
@@ -100,7 +100,7 @@ optional additions, so existing records and required invoice fields remain compa
     },
     "extraction": {
       "provider": "gemini",
-      "model": "gemini-3.8-flash",
+      "model": "gemini-2.5-flash",
       "processingMs": 1200,
       "confidence": 0.93,
       "warnings": []
@@ -131,7 +131,7 @@ The `data.extraction` object also has these Stage 2 fields:
     }]
   },
   "visionModels": [{
-    "model": "gemini-3.8-flash",
+    "model": "gemini-2.5-flash",
     "invoice": { "...": "same invoice schema as data.invoice" },
     "confidence": 0.93,
     "warnings": []
@@ -155,8 +155,9 @@ Bounding-box coordinates are pixels in the rendered/prepared page. Older stored 
 | 503 | `OCR_NOT_AVAILABLE` | Tesseract worker or local OCR language data could not be initialized |
 | 422 | `PDF_RENDER_FAILED` | PDF cannot be read or rendered for the OCR branch |
 | 500 | `OCR_CONFIGURATION_INVALID` / `GEMINI_MODEL_CONFIGURATION_INVALID` | invalid configured language or Vision model list |
-| 422 | `INCOMPLETE_EXTRACTION` | Gemini could not read all required invoice fields |
+| 422 | `INCOMPLETE_EXTRACTION` | Gemini returned a field with an invalid format; the error message lists field paths without exposing extracted values |
 | 429 | `GEMINI_RATE_LIMITED` | Gemini quota or rate limit |
+| 502 | `GEMINI_MODEL_NOT_FOUND` | configured Gemini model is unavailable to the API key or does not support `generateContent`; check `GEMINI_MODEL` / `GEMINI_MODELS` |
 | 502 | `GEMINI_AUTH_ERROR` / `GEMINI_PROVIDER_ERROR` | invalid key or provider failure; unexpected provider HTTP status is included in the message and server log (status/model only) |
 | 503 | `GEMINI_NOT_CONFIGURED` | `GEMINI_API_KEY` is not set |
 | 504 | `GEMINI_TIMEOUT` | Gemini did not respond within 60 seconds |
@@ -179,7 +180,7 @@ curl -i -X POST http://localhost:3000/api/extract
 
 ## 3. `GET /api/invoices`
 
-Lists every invoice stored in the mock database (`data/invoices.json`, newest first, max 50 records).
+Lists the newest 50 invoices indexed in MariaDB and loads their full payloads from MongoDB.
 
 ```bash
 curl -s http://localhost:3000/api/invoices
@@ -193,7 +194,7 @@ curl -s http://localhost:3000/api/invoices
 
 ## 4. `DELETE /api/invoices`
 
-Resets the mock database. Intended for demos/tests.
+Deletes invoice records from MariaDB and their payloads from MongoDB. Intended for demos/tests.
 
 ```bash
 curl -s -X DELETE http://localhost:3000/api/invoices
@@ -216,7 +217,7 @@ curl -s -X DELETE http://localhost:3000/api/invoices
 | `source.contentHash` | string(16) | first 16 hex chars of the SHA-256 of the bytes |
 | `invoice.*` | object | invoice number, serial, issue date, seller/buyer, currency, `lineItems[]`, subtotal, taxRate, taxAmount, totalAmount |
 | `extraction.provider` | `"gemini"` \| `"mock"` | new API results use Gemini; mock is retained for older records |
-| `extraction.model` | string | Gemini model; default `gemini-3.8-flash` |
+| `extraction.model` | string | Gemini model; default `gemini-2.5-flash` |
 | `extraction.processingMs` | number | time spent extracting |
 | `extraction.confidence` | number 0–1 | Gemini's estimate, not a calibrated guarantee |
 | `extraction.warnings` | string[] | extraction caveats returned by Gemini |
@@ -229,7 +230,8 @@ The authoritative field list and constraints: `lib/invoiceSchema.ts`.
 
 * **No authentication / authorization.** Any client can upload, read and delete stored records.
 * **No rate limiting** and no file persistence of the uploaded document itself (only the extracted JSON is stored).
-* The mock database is a JSON file: single-process only; concurrent writes are not protected; not suitable for serverless deployment.
+* Database connections require `MYSQL_*` and `MONGODB_URI` variables in `.env.local`; the invoice index table is created automatically when the API first connects.
+* A database outage returns `503 DATABASE_UNAVAILABLE`; records are not silently replaced with mock or empty data.
 * Uploaded invoice files are transmitted to Google's Gemini API. Review privacy, terms, quota and pricing before sending real invoices.
 
 ### Gemini integration
@@ -237,7 +239,7 @@ The authoritative field list and constraints: `lib/invoiceSchema.ts`.
 | Item | Value |
 | --- | --- |
 | Provider | Gemini multimodal `generateContent` |
-| Model | `gemini-3.8-flash` by default; override with `GEMINI_MODEL` |
+| Model | `gemini-2.5-flash` by default; override with `GEMINI_MODEL` |
 | Call site | `lib/geminiExtractor.ts`, called from `app/api/extract/route.ts` |
 | Credentials | `GEMINI_API_KEY` in ignored `.env.local`; never commit or expose in frontend |
 | Payload | Base64-encoded uploaded PDF/image; transmitted to Google |

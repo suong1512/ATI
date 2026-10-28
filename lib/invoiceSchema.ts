@@ -8,24 +8,24 @@ import { z } from "zod";
  */
 
 export const lineItemSchema = z.object({
-  name: z.string().min(1),
-  unit: z.string().min(1),
-  quantity: z.number().positive(),
+  name: z.string(),
+  unit: z.string(),
+  quantity: z.number().nonnegative(),
   unitPrice: z.number().nonnegative(),
   lineTotal: z.number().nonnegative(),
 });
 
 export const invoiceSchema = z.object({
-  invoiceNumber: z.string().min(1),
-  serialNumber: z.string().min(1),
-  issueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  sellerName: z.string().min(1),
-  sellerTaxId: z.string().regex(/^\d{10}(-\d{3})?$/),
-  sellerAddress: z.string().min(1),
-  buyerName: z.string().min(1),
-  buyerTaxId: z.string().regex(/^\d{10}(-\d{3})?$/),
+  invoiceNumber: z.string(),
+  serialNumber: z.string(),
+  issueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")),
+  sellerName: z.string(),
+  sellerTaxId: z.string().regex(/^\d{10}(-\d{3})?$/).or(z.literal("")),
+  sellerAddress: z.string(),
+  buyerName: z.string(),
+  buyerTaxId: z.string().regex(/^\d{10}(-\d{3})?$/).or(z.literal("")),
   currency: z.literal("VND"),
-  lineItems: z.array(lineItemSchema).min(1).max(10),
+  lineItems: z.array(lineItemSchema),
   subtotal: z.number().nonnegative(),
   taxRate: z.number().min(0).max(1),
   taxAmount: z.number().nonnegative(),

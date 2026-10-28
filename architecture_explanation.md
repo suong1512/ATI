@@ -11,14 +11,14 @@
 A single Next.js (App Router) fullstack prototype. The browser renders one page with a submission box;
 the server (Next.js API routes, Node runtime) validates the upload, preprocesses images, then runs
 local Tesseract OCR and configured Gemini Vision model(s) concurrently. OCR evidence and structured
-invoice JSON are validated with Zod and stored in a JSON file that stands in for the database.
+invoice JSON are validated with Zod, indexed in MariaDB, and stored as a complete payload in MongoDB.
 
 | Layer | Implementation |
 | --- | --- |
 | Client | `app/page.tsx` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js` full-screen at `/`; Next.js serves the source files at their matching root URLs |
 | Server | `app/api/extract/route.ts`, `app/api/invoices/route.ts` |
 | Domain logic | `lib/documentPreprocessing.ts` (Sharp image preparation), `lib/documentOcr.ts` (local OCR/PDF rendering), `lib/geminiExtractor.ts` (dual branches), `lib/invoiceSchema.ts` (contract), `lib/uploadConfig.ts` (upload rules) |
-| Storage | `lib/invoiceStore.ts` → `data/invoices.json` (mock database) |
+| Storage | `lib/invoiceStore.ts` → MariaDB `Extracted_Invoice` index + MongoDB `Extraction_Records` payloads |
 | External APIs | Google Gemini API; only the Vision branch transmits documents. OCR runs locally; OCR language data may be downloaded on first use |
 
 ## 2. Data Flow
@@ -32,7 +32,8 @@ sequenceDiagram
     participant O as Local Tesseract OCR
     participant X as Gemini API
     participant Z as Zod schema
-    participant D as data/invoices.json
+    participant M as MariaDB
+    participant D as MongoDB
 
     U->>P: chọn file (PDF/PNG/JPEG)
     P->>P: validateUploadFile() (type, size)
@@ -49,7 +50,8 @@ sequenceDiagram
         X-->>R: invoice JSON per model
     end
     R->>Z: validate invoice and extraction evidence
-    R->>D: append record (max 50)
+    R->>M: save invoice metadata
+    R->>D: save complete ExtractionResult payload
     R-->>P: 200 { ok: true, data }
     P->>U: dashboard displays extraction status and saved history
     P->>R: GET /api/invoices
@@ -61,7 +63,7 @@ sequenceDiagram
 | --- | --- |
 | Gemini extraction behind the Zod contract | Provider output is validated before storage; incomplete results are rejected instead of being guessed |
 | Zod as the single response contract | Matches the "Structured Output Validation" goal in `project_details.md` |
-| JSON file store instead of Prisma/SQLite | Zero dependencies, no migration risk; Prisma/SQLite is the documented next step |
+| MariaDB metadata + MongoDB payload | Reuses the project's running polyglot database; SQL supports indexed history while MongoDB keeps the complete extraction evidence |
 | Client-safe constants in `lib/uploadConfig.ts` | `lib/mockExtractor.ts` / `lib/invoiceStore.ts` use Node APIs and must stay server-only |
 | Plain CSS (no Tailwind) | No extra build configuration for a prototype |
 

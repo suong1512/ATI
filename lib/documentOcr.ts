@@ -166,6 +166,15 @@ export async function extractDocumentOcr(
     || join(tmpdir(), `ati-document-ocr-${process.getuid?.() ?? process.pid}`);
   await mkdir(cachePath, { recursive: true });
   workerOptions.cachePath = cachePath;
+  workerOptions.workerPath = join(
+    process.cwd(),
+    "node_modules",
+    "tesseract.js",
+    "src",
+    "worker-script",
+    "node",
+    "index.js",
+  );
 
   let worker: Tesseract.Worker | undefined;
   try {

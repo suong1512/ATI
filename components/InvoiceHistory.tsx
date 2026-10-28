@@ -14,7 +14,7 @@ export default function InvoiceHistory({ invoices, loading, onRefresh, onClear }
   return (
     <section className="card">
       <div className="card-header">
-        <h2>3. Hóa đơn đã lưu (mock database: data/invoices.json)</h2>
+        <h2>3. Hóa đơn đã lưu (MariaDB + MongoDB)</h2>
         <div className="actions" style={{ marginTop: 0 }}>
           <button type="button" className="btn-secondary" onClick={onRefresh} disabled={loading}>
             {loading ? "Đang tải..." : "Làm mới"}

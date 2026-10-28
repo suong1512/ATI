@@ -98,7 +98,7 @@ Last updated: 26/10/2026 · Active task: **TASK-STAGE2-26-10**
 - [x] Scaffold Next.js 15 (App Router) + TypeScript app at the repository root
 - [x] Zod contract `lib/invoiceSchema.ts`
 - [x] Mock extractor `lib/mockExtractor.ts` (file-derived, deterministic)
-- [x] Mock database `lib/invoiceStore.ts` → `data/invoices.json`
+- [x] MariaDB + MongoDB storage via `lib/database.ts` and `lib/invoiceStore.ts`
 - [x] API routes `POST /api/extract`, `GET|DELETE /api/invoices`
 - [x] UI: submission box, result dashboard, history
 - [x] Sample invoice `samples/sample-invoice.pdf` (+ generator script)
@@ -119,7 +119,7 @@ Last updated: 26/10/2026 · Active task: **TASK-STAGE2-26-10**
 ### Follow-up work
 
 - [x] Choose Gemini as the provider; live testing still needs a local API key.
-- [ ] Replace the JSON file store with Prisma + SQLite (`project_details.md`)
+- [x] Replace the JSON file store with MariaDB invoice metadata + MongoDB extraction payloads
 - [ ] Authentication + department RBAC
 - [ ] Automated tests (no test runner configured yet)
 

@@ -9,7 +9,7 @@ import {
 } from "./documentPreprocessing";
 import { extractDocumentOcr } from "./documentOcr";
 
-const DEFAULT_GEMINI_MODEL = "gemini-3.8-flash";
+const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models";
 const REQUEST_TIMEOUT_MS = 60_000;
 
@@ -121,9 +121,10 @@ function parseInvoiceResponse(text: string): GeminiInvoiceResponse {
     warnings: z.array(z.string()).optional(),
   }).safeParse(value);
   if (!parsed.success) {
+    const invalidFields = [...new Set(parsed.error.issues.map((issue) => issue.path.join(".") || "invoice"))];
     throw geminiError(
       422,
-      "Không trích xuất được đầy đủ các trường hóa đơn bắt buộc. Hãy dùng file rõ nét, đầy đủ thông tin rồi thử lại.",
+      `Kết quả Gemini có trường không đúng định dạng. Hãy kiểm tra hóa đơn và thử lại. Trường cần kiểm tra: ${invalidFields.join(", ")}.`,
       "INCOMPLETE_EXTRACTION",
     );
   }
@@ -181,6 +182,14 @@ async function extractWithGemini(
     }
     if (response.status === 400) {
       throw geminiError(422, "Gemini không chấp nhận tài liệu này. Hãy thử một file PDF hoặc ảnh khác.", "GEMINI_REJECTED_FILE");
+    }
+    if (response.status === 404) {
+      console.error("[Gemini API] configured model was not found", { status: response.status, model });
+      throw geminiError(
+        502,
+        `Gemini không tìm thấy model "${model}" hoặc model này không hỗ trợ generateContent. Kiểm tra GEMINI_MODEL/GEMINI_MODELS và model được bật cho API key.`,
+        "GEMINI_MODEL_NOT_FOUND",
+      );
     }
     console.error("[Gemini API] provider request failed", { status: response.status, model });
     throw geminiError(

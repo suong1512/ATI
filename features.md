@@ -28,7 +28,7 @@
   1. Add `GEMINI_API_KEY=...` to `.env.local` (see `knowledge/configuration.md`) and restart `npm run dev`.
   2. Upload a readable invoice at <http://localhost:3000/> or run `curl -F "file=@samples/sample-invoice.pdf;type=application/pdf" http://localhost:3000/api/extract`.
   3. Check the returned seller, buyer, dates, line items and totals against the document.
-* **Expected result:** invoice JSON that satisfies `lib/invoiceSchema.ts`, plus `extraction.ocr` (local OCR pages, word boxes and confidence) and `extraction.visionModels` (one result per configured Vision model). OCR language defaults to Vietnamese + English; model list uses `GEMINI_MODELS`.
+* **Expected result:** invoice JSON that satisfies `lib/invoiceSchema.ts`, plus `extraction.ocr` (local OCR pages, word boxes and confidence) and `extraction.visionModels` (one result per configured Vision model). Unreadable text fields may be empty, and missing numeric values may be zero as indicated by warnings; invalid field formats return field paths in the API error details. OCR language defaults to Vietnamese + English; model list uses `GEMINI_MODELS`, with the default model set to `gemini-2.5-flash` when no override is configured.
 * **Status:** Partial — Gemini integration is implemented; a live API call requires a configured key and has not been verified in this environment.
 
 ## F-07 — Dual-branch extraction (Stage 2)
@@ -45,15 +45,15 @@
 * **Expected result:** only the selected invoice is shown; a missing or deleted record displays an explicit message.
 * **Status:** Partial — detail view and record lookup are implemented. A Gemini key is only required to create new invoices; existing saved records can be opened from history.
 
-## F-04 — Stored invoices (local JSON store) + reset
+## F-04 — Stored invoices (MariaDB + MongoDB) + reset
 
-* **Description:** Every successful extraction is appended to `data/invoices.json` (newest first, max 50 records) and listed in *Hóa đơn đã lưu*. The dashboard can search by filename, invoice number, seller/buyer or tax ID; *Làm mới* reloads the list; *Xóa tất cả* calls `DELETE /api/invoices` after confirmation.
+* **Description:** Every successful extraction stores invoice metadata in MariaDB and the complete extraction payload in MongoDB. The newest 50 records are listed in *Hóa đơn đã lưu*. The dashboard can search by filename, invoice number, seller/buyer or tax ID; *Làm mới* reloads the list; *Xóa tất cả* calls `DELETE /api/invoices` after confirmation.
 * **How to test:**
   1. `curl -s http://localhost:3000/api/invoices` → `{"ok":true,"count":N,"data":[...]}`
-  2. `cat data/invoices.json` → the same records on disk (persistence across server restarts).
+  2. Verify metadata in MariaDB's `Extracted_Invoice` table and the matching payload in MongoDB's `Extraction_Records` collection.
   3. Use *Xóa tất cả* in the dashboard and confirm, or run `curl -X DELETE http://localhost:3000/api/invoices` → `{"ok":true,"deleted":N}`.
 * **Expected result:** records persist across reloads and can be reset for a demo.
-* **Status:** Partial — the API and dashboard list/search/reset controls are implemented; browser checks are recorded in `state/task_26_10_ui_state.md`.
+* **Status:** Partial — the API and dashboard list/search/reset controls use MariaDB + MongoDB; browser checks are recorded in `state/task_26_10_ui_state.md`.
 
 ## F-05 — Sample invoice file for testing
 
@@ -76,7 +76,7 @@
 | Feature | Notes |
 | --- | --- |
 | Other multimodal providers | Gemini is integrated; other providers are not |
-| SQLite + Prisma storage, users, departments, audit logs | Target architecture in `project_details.md` |
+| Authentication, users, departments, audit logs | Target architecture in `project_details.md` |
 | Authentication and department-scoped RBAC | No login exists; all endpoints are open |
 | Batch jobs / model selection per job | Mentioned in `project_details.md` |
 | PDF/image preview in the submission box | Only file name/size are shown |

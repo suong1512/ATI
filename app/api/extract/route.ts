@@ -4,7 +4,7 @@ import { GeminiExtractionError, geminiExtract } from "@/lib/geminiExtractor";
 import { OcrExtractionError } from "@/lib/documentOcr";
 import { extractionResultSchema } from "@/lib/invoiceSchema";
 import { handleLocalFrontendOptions, withLocalFrontendCors } from "@/lib/localFrontendCors";
-import { saveInvoice } from "@/lib/invoiceStore";
+import { InvoiceStoreError, saveInvoice } from "@/lib/invoiceStore";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -81,6 +81,14 @@ export async function POST(request: NextRequest) {
     }
     if (error instanceof OcrExtractionError) {
       return withCors(jsonError(error.status, error.code, error.message));
+    }
+    if (error instanceof InvoiceStoreError) {
+      console.error("[POST /api/extract] Database write failed.", error);
+      return withCors(jsonError(
+        503,
+        "DATABASE_UNAVAILABLE",
+        "Đã trích xuất hóa đơn nhưng không thể lưu vào database. Hãy kiểm tra kết nối MariaDB và MongoDB.",
+      ));
     }
     console.error("[POST /api/extract]", error);
     return withCors(jsonError(500, "INTERNAL_ERROR", "Không xử lý được file. Xem log server."));

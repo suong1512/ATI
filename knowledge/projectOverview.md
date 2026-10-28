@@ -11,8 +11,8 @@
 | Project name | **Smart Document Processing** — Automated Invoice Data Extraction System |
 | Project type | Fullstack web prototype (Next.js App Router) |
 | Purpose | Users upload invoice documents (PDF / PNG / JPEG). The system returns structured invoice JSON, stores it in a database and shows it on a dashboard |
-| Data pipeline | `upload → preprocessing → local OCR + Gemini Vision model(s) → structured JSON + evidence → local JSON file store` |
-| Implementation level | UI, API, Zod contract, server-side preprocessing, local OCR, configurable Gemini Vision branches and JSON-file storage are implemented; Vision extraction requires a server-side API key |
+| Data pipeline | `upload → preprocessing → local OCR + Gemini Vision model(s) → structured JSON + evidence → MariaDB metadata + MongoDB payload` |
+| Implementation level | UI, API, Zod contract, server-side preprocessing, local OCR, configurable Gemini Vision branches and MariaDB/MongoDB persistence are implemented; Vision extraction requires a server-side API key |
 
 ## 2. Target Users
 
@@ -27,11 +27,11 @@
 | Submission box (upload) | Drag & drop or file picker; client + server validation (PDF/PNG/JPEG, ≤ 10 MB), then server-side image preprocessing | Partial |
 | Dual-branch extraction | Local OCR returns text/layout evidence; configurable Gemini Vision model(s) return structured invoice JSON | In-Progress — live Vision API calls need a configured key |
 | Structured output contract | Zod schema `lib/invoiceSchema.ts` validates every result before it is stored/returned | Working |
-| Mock database | Every result is appended to `data/invoices.json` (max 50 records) | Working |
+| Database persistence | Metadata is indexed in MariaDB and full extraction payloads are stored in MongoDB | Implemented; requires local DB services and env variables |
 | Result dashboard | Invoice card + line items + totals + raw JSON + download JSON | Partial |
 | Invoice history | `GET /api/invoices` list + reset button (mock DB reset) | Partial |
 | Other LLM providers | Gemini is integrated; other providers are not | Not implemented |
-| SQLite + Prisma storage, RBAC | Target storage described in `project_details.md` | Not implemented |
+| Authentication + RBAC | Target security behavior described in `project_details.md` | Not implemented |
 
 Status vocabulary: `Working` · `Partial` · `Mocked` · `In-Progress` · `Blocked`.
 `Working` = verified end-to-end at HTTP/data level; `Partial` = verified at API/data level but the UI has not
@@ -53,7 +53,7 @@ Step-by-step manual test instructions live in `features.md`.
 
 * Other LLM provider keys and billing.
 * Authentication, RBAC, departments.
-* Prisma/SQLite migration, production deployment, CI/CD.
+* Production deployment, CI/CD.
 * Authentication, RBAC, and production deployment.
 
 ## 5. Team Profile & Development Model

@@ -90,18 +90,30 @@ Options (pick one, needs a decision before `npm run lint` can be trusted):
 | Variable | Required now? | Purpose |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | Yes, for extraction | Gemini API key; server-side only, never expose it in frontend code or commit it |
-| `GEMINI_MODEL` | No | Optional Gemini model override; defaults to `gemini-3.8-flash` |
+| `GEMINI_MODEL` | No | Optional Gemini model override; defaults to `gemini-2.5-flash` |
 | `GEMINI_MODELS` | No | Comma-separated Vision model list; overrides `GEMINI_MODEL` and allows multiple model branches |
 | `TESSERACT_LANGUAGES` | No | Tesseract language codes joined with `+`; defaults to `vie+eng` |
 | `TESSERACT_LANG_PATH` | No | Optional local directory or URL containing Tesseract language data; default Tesseract data source is used otherwise |
 | `TESSERACT_CACHE_PATH` | No | Optional cache override; defaults to a per-user directory under the OS temporary folder |
+| `MYSQL_HOST` | Yes, for invoice history | MariaDB host, usually `127.0.0.1` |
+| `MYSQL_PORT` | Yes, for invoice history | MariaDB host port, `3307` for the supplied Docker Compose file |
+| `MYSQL_USER` | Yes, for invoice history | MariaDB application user |
+| `MYSQL_PASSWORD` | Yes, for invoice history | MariaDB application password |
+| `MYSQL_DATABASE` | Yes, for invoice history | Database name, usually `smart_doc_db` |
+| `MONGODB_URI` | Yes, for invoice history | MongoDB connection URI including database and authentication source |
 
 Create `.env.local` in the repository root and add:
 
 ```text
 GEMINI_API_KEY=your-key-from-aistudio
-# GEMINI_MODEL=gemini-3.8-flash
-# GEMINI_MODELS=gemini-3.8-flash,gemini-3.6-flash
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3307
+MYSQL_USER=appuser
+MYSQL_PASSWORD=your-local-database-password
+MYSQL_DATABASE=smart_doc_db
+MONGODB_URI=mongodb://mongoadmin:your-local-password@127.0.0.1:27017/smart_doc_mongo_db?authSource=admin
+# GEMINI_MODEL=gemini-2.5-flash
+# GEMINI_MODELS=gemini-2.5-flash,gemini-2.0-flash
 # TESSERACT_LANGUAGES=vie+eng
 ```
 
@@ -115,7 +127,12 @@ OCR is executed locally by Tesseract. The first OCR request may download languag
 is cached outside the repository under the OS temporary folder by default. For offline environments,
 set `TESSERACT_LANG_PATH` to a directory containing the corresponding trained data.
 PDF pages are rendered locally for OCR; PDF bytes sent to Gemini remain unchanged.
-Next.js keeps `@napi-rs/canvas` external to webpack so its native Node binding can load at runtime.
+The Node worker entry point is resolved directly from `node_modules/tesseract.js` because Next.js
+otherwise may look for it under `.next/worker-script`. Next.js keeps `@napi-rs/canvas` external to
+webpack so its native Node binding can load at runtime.
+
+If `POST /api/extract` returns `GEMINI_MODEL_NOT_FOUND`, check that `GEMINI_MODEL` or every entry in
+`GEMINI_MODELS` matches a model available to the configured API key and supports `generateContent`.
 
 ---
 
@@ -123,7 +140,7 @@ Next.js keeps `@napi-rs/canvas` external to webpack so its native Node binding c
 
 Invoice extraction requires internet access and a Gemini API key. The dashboard can load without the key,
 but `POST /api/extract` returns `GEMINI_NOT_CONFIGURED` until it is set.
-The local JSON file `data/invoices.json` is used for invoice history; no separate database server is needed.
+Invoice history requires the MariaDB and MongoDB services from `smart-doc-db/docker-compose.yml`. Start those services before running the app; the API creates its `Extracted_Invoice` metadata table on first connection. MariaDB stores invoice metadata and MongoDB stores each complete extraction payload.
 
 ---
 
@@ -133,20 +150,26 @@ The local JSON file `data/invoices.json` is used for invoice history; no separat
 # 1. install dependencies
 npm install
 
-# 2. start the app and API server
+# 2. Start the database services from the smart-doc-db directory
+docker compose up -d
+
+# 3. Copy the DB variables from .env.example to .env.local and set local credentials
+# Keep the GEMINI_API_KEY in .env.local as well.
+
+# 4. start the app and API server
 npm run dev
 # App: http://localhost:3000
 # Dashboard integrated with the API: http://localhost:3000/
 
-# 3. validation
+# 5. validation
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint (see engine mismatch in §3)
 npm run build        # production build
 
-# 4. optional: regenerate the sample invoice used for testing
+# 6. optional: regenerate the sample invoice used for testing
 node scripts/make-sample-pdf.mjs
 
-# 5. optional: test the API without the browser
+# 7. optional: test the API without the browser
 curl -F "file=@samples/sample-invoice.pdf;type=application/pdf" http://localhost:3000/api/extract
 curl http://localhost:3000/api/invoices
 ```

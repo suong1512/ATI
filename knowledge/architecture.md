@@ -41,12 +41,13 @@ ATI_PhAnh_group/
    ├── documentOcr.ts             # Local Tesseract OCR; renders PDF pages for OCR
    ├── geminiExtractor.ts         # Gemini multimodal extraction (server only)
    ├── mockExtractor.ts           # Document-kind detection and legacy mock helpers
-   ├── invoiceStore.ts            # Local JSON-file storage: data/invoices.json (node:fs)
+   ├── database.ts                # MariaDB pool and MongoDB connection
+   ├── invoiceStore.ts            # MariaDB invoice index + MongoDB extraction payloads
    ├── uploadConfig.ts            # Shared upload rules (client-safe, no Node imports)
    └── format.ts                  # VND / bytes / date / percent formatting
  scripts/make-sample-pdf.mjs    # Generates samples/sample-invoice.pdf (test fixture)
  samples/sample-invoice.pdf     # 2-page sample invoice for manual testing
- data/                          # Mock database directory (invoices.json is gitignored)
+ data/                          # Legacy local data directory (not used by invoice storage)
  knowledge/                     # Project knowledge (this documentation system)
  requestFromUsers/              # Original human requests
  state/                         # Task state / handoff
@@ -71,7 +72,7 @@ ATI_PhAnh_group/
 | PDF rendering | PDF.js `^4.10.38` + `@napi-rs/canvas` | Render PDF pages for the local OCR branch; original PDF remains the Vision input |
 | Styling | Plain CSS (`app/globals.css`) | No Tailwind/PostCSS configured on purpose |
 | Lint | ESLint 9 + `eslint-config-next` 15.5.26 | Flat config `eslint.config.mjs`; see known risk in §8 |
-| Storage | Local JSON file `data/invoices.json` | Mock database via `node:fs` (not Prisma/SQLite yet) |
+| Storage | MariaDB `Extracted_Invoice` + MongoDB `Extraction_Records` | SQL metadata index and full extraction JSON payload |
 | Runtime | Node.js `20.18.0` (devcontainer) | Port 3000 |
 | External services | Google Gemini API | Vision branch sends PDFs unchanged and preprocessed images; requires server-side API key |
 
@@ -91,9 +92,10 @@ ATI_PhAnh_group/
 | OCR extraction | `lib/documentOcr.ts` | Runs local Vietnamese/English OCR on prepared images or rendered PDF pages; returns page text, word bounding boxes and confidence |
 | Dual-branch extraction | `lib/geminiExtractor.ts` | Runs local OCR and one or more configured Gemini Vision models concurrently; stores OCR evidence and all model outputs |
 | Document metadata | `lib/mockExtractor.ts` | Magic-byte kind detection and PDF page estimate |
-| Local JSON store | `lib/invoiceStore.ts` | `listInvoices` / `saveInvoice` / `clearInvoices` on `data/invoices.json` |
+| Database connections | `lib/database.ts` | Shared MariaDB pool and MongoDB connection from server-side environment variables |
+| Invoice store | `lib/invoiceStore.ts` | `listInvoices` / `saveInvoice` / `clearInvoices` across MariaDB and MongoDB |
 | API: extract | `app/api/extract/route.ts` | Validates the upload, runs the extractor, validates with Zod, stores, returns JSON |
-| API: invoices | `app/api/invoices/route.ts` | Lists stored invoices / resets the mock database |
+| API: invoices | `app/api/invoices/route.ts` | Lists stored invoices / resets invoice records in both databases |
 
 ---
 
@@ -113,7 +115,8 @@ flowchart TD
     V --> G
     G -->|invalid or incomplete| H["422 extraction error"]
     G -->|valid| I["invoiceStore.saveInvoice()"]
-    I --> J[("data/invoices.json\n(local JSON store)")]
+    I --> J[("MariaDB\nExtracted_Invoice index")]
+    I --> K[("MongoDB\nExtraction_Records payload")]
     I --> K["200 OK { ok, data, meta }"]
     K --> L["Dashboard updates history and statistics"]
     L --> M["GET /api/invoices"]
@@ -130,7 +133,8 @@ sequenceDiagram
     participant O as Local Tesseract OCR
     participant X as Gemini API
     participant Z as Zod schema
-    participant D as data/invoices.json
+    participant M as MariaDB
+    participant D as MongoDB
 
     U->>P: chọn file (PDF/PNG/JPEG)
     P->>P: validateUploadFile() (type, size)
@@ -148,7 +152,8 @@ sequenceDiagram
     end
     R->>Z: validate invoice + OCR and Vision branch results
     Z-->>R: valid
-    R->>D: append record (max 50)
+    R->>M: save invoice metadata
+    R->>D: save full extraction payload
     R-->>P: 200 { ok: true, data }
     P->>U: invoice card + raw JSON
 ```
@@ -161,7 +166,7 @@ sequenceDiagram
 | --- | --- | --- |
 | `POST` | `/api/extract` | Upload a PDF/PNG/JPEG, return + store the extraction result |
 | `GET` | `/api/invoices` | List stored invoices |
-| `DELETE` | `/api/invoices` | Reset local invoice storage (demo helper) |
+| `DELETE` | `/api/invoices` | Delete stored invoice records from MariaDB and MongoDB (demo helper) |
 
 Details, payloads and error codes: `knowledge/apiDocs.md`.
 
@@ -194,7 +199,7 @@ OCR itself runs locally; Tesseract may download its configured language data on 
 3. **OCR is local and resource-bounded:** PDF OCR renders up to 50 pages; OCR language defaults to `vie+eng`. One or more Vision model names can be selected with `GEMINI_MODELS`; each configured Vision result is returned separately. The first result remains the legacy top-level invoice; no automatic reconciliation is claimed.
 4. **Validation status (30/09/2026)** — `npm install`, `npm run typecheck`, `npm run lint` and 7 `curl` API cases all passed; two bugs were found and fixed during validation. A full `npm run build` and the browser click-through are still pending. Evidence: `state/task_30_09_state.md` §5.
 5. **ESLint engine risk** — `eslint-visitor-keys@5` requires Node `^20.19.0 || ^22.13.0 || >=24`, but the image pins `node:20.18.0` (`npm warn EBADENGINE`). `npm run lint` may fail until the image is bumped (e.g. `node:20.19.0-bookworm`) or ESLint is removed.
-6. **JSON file "database"** — single process, no locking, no queries, not suitable for serverless/multi-replica deployment, keeps max 50 records.
+6. **Polyglot persistence** — MariaDB stores indexed invoice metadata and MongoDB stores each complete extraction payload; the API lists the latest 50 records.
 7. **No authentication / RBAC**; every request can read and reset invoice storage.
 8. **Upload limit** 10 MB; accepted: `application/pdf`, `image/png`, `image/jpeg` (client checks mime type or extension, server checks magic bytes).
 9. **Client-safe constants** must stay in `lib/uploadConfig.ts`; `lib/mockExtractor.ts` and `lib/invoiceStore.ts` import `node:crypto` / `node:fs` and must never be imported by client components.
@@ -207,7 +212,7 @@ OCR itself runs locally; Tesseract may download its configured language data on 
 | --- | --- |
 | Gemini extractor behind the real Zod contract | Provider output is validated, and incomplete results are rejected rather than being saved as real invoice data |
 | Zod as the single response contract | Matches the project's "Structured Output Validation" goal (`project_details.md`) |
-| JSON file store instead of Prisma/SQLite | Zero dependencies and no migration risk; `→ database` is demonstrable today. Prisma/SQLite is the documented next step |
+| MariaDB index + MongoDB payload | Reuses the team's running database services and keeps the full extraction evidence flexible |
 | Plain CSS, no Tailwind | Avoids extra build configuration for a prototype |
 | Upload rules duplicated client + server | Client gives instant feedback; the server stays authoritative |
 
@@ -231,7 +236,7 @@ Manual test steps with expected results: `features.md`.
 
 ## 11. Planned / Not Implemented
 
-* Prisma + SQLite storage of invoices, users, departments, audit logs.
+* Authentication + department-scoped RBAC.
 * Authentication + department-scoped RBAC.
 * Batch jobs / model selection per job.
 * Automated tests (no test runner is configured yet).
