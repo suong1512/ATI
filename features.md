@@ -28,7 +28,7 @@
   1. Add `GEMINI_API_KEY=...` to `.env.local` (see `knowledge/configuration.md`) and restart `npm run dev`.
   2. Upload a readable invoice at <http://localhost:3000/> or run `curl -F "file=@samples/sample-invoice.pdf;type=application/pdf" http://localhost:3000/api/extract`.
   3. Check the returned seller, buyer, dates, line items and totals against the document.
-* **Expected result:** invoice JSON that satisfies `lib/invoiceSchema.ts`, plus `extraction.ocr` (local OCR pages, word boxes and confidence) and `extraction.visionModels` (one result per configured Vision model). Unreadable text fields may be empty, and missing numeric values may be zero as indicated by warnings; invalid field formats return field paths in the API error details. OCR language defaults to Vietnamese + English; model list uses `GEMINI_MODELS`, with the default model set to `gemini-2.5-flash` when no override is configured.
+* **Expected result:** invoice JSON that satisfies `lib/invoiceSchema.ts`, plus `extraction.ocr` (local OCR pages, word boxes and confidence) and `extraction.visionModels` (one result per configured Vision model). Invoice attributes must be present, but their values may be `null` or `0`; the detail page identifies null/empty values, flags zero values for review, and displays model warnings. A missing attribute is rejected with its exact JSON path. OCR language defaults to Vietnamese + English; model list uses `GEMINI_MODELS`, with the default model set to `gemini-2.5-flash` when no override is configured.
 * **Status:** Partial — Gemini integration is implemented; a live API call requires a configured key and has not been verified in this environment.
 
 ## F-07 — Dual-branch extraction (Stage 2)

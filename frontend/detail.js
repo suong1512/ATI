@@ -7,13 +7,75 @@
       const openOriginalDocument = document.querySelector("#open-original-document");
       let currentRecord = null;
       let documentPreviewUrl = null;
+      const missingValue = "Thiếu giá trị";
 
       function setText(id, value) {
-        document.querySelector(`#${id}`).textContent = value || "—";
+        document.querySelector(`#${id}`).textContent =
+          value === null || value === undefined || value === "" ? missingValue : String(value);
       }
 
       function formatMoney(amount) {
+        if (amount === null || amount === undefined) return missingValue;
         return `${new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(amount)} VND`;
+      }
+
+      function missingInvoiceFields(invoice) {
+        const fields = [
+          ["Số hóa đơn", "invoice.invoiceNumber", invoice.invoiceNumber],
+          ["Ký hiệu hóa đơn", "invoice.serialNumber", invoice.serialNumber],
+          ["Ngày phát hành", "invoice.issueDate", invoice.issueDate],
+          ["Tên người bán", "invoice.sellerName", invoice.sellerName],
+          ["Mã số thuế người bán", "invoice.sellerTaxId", invoice.sellerTaxId],
+          ["Địa chỉ người bán", "invoice.sellerAddress", invoice.sellerAddress],
+          ["Tên người mua", "invoice.buyerName", invoice.buyerName],
+          ["Mã số thuế người mua", "invoice.buyerTaxId", invoice.buyerTaxId],
+          ["Tiền tệ", "invoice.currency", invoice.currency],
+          ["Cộng tiền hàng", "invoice.subtotal", invoice.subtotal],
+          ["Thuế suất", "invoice.taxRate", invoice.taxRate],
+          ["Tiền thuế", "invoice.taxAmount", invoice.taxAmount],
+          ["Tổng thanh toán", "invoice.totalAmount", invoice.totalAmount],
+        ];
+        const missing = fields
+          .filter(([, path, value]) => value === null || value === undefined || value === "" || (path === "invoice.currency" && value === 0))
+          .map(([label, path]) => `${label} (${path})`);
+
+        if (invoice.lineItems === null || invoice.lineItems === undefined) {
+          missing.push("Danh sách hàng hóa (invoice.lineItems)");
+        } else if (invoice.lineItems.length === 0) {
+          missing.push("Danh sách hàng hóa trống (invoice.lineItems)");
+        } else {
+          invoice.lineItems.forEach((item, index) => {
+            [
+              ["Tên hàng hóa", "name", item.name],
+              ["Đơn vị", "unit", item.unit],
+              ["Số lượng", "quantity", item.quantity],
+              ["Đơn giá", "unitPrice", item.unitPrice],
+              ["Thành tiền", "lineTotal", item.lineTotal],
+            ].forEach(([label, key, value]) => {
+              if (value === null || value === undefined || value === "") {
+                missing.push(`${label} (invoice.lineItems[${index}].${key})`);
+              }
+            });
+          });
+        }
+        return missing;
+      }
+
+      function zeroValuePaths(invoice) {
+        const fields = [
+          ["invoice.subtotal", invoice.subtotal],
+          ["invoice.taxRate", invoice.taxRate],
+          ["invoice.taxAmount", invoice.taxAmount],
+          ["invoice.totalAmount", invoice.totalAmount],
+        ];
+        (invoice.lineItems ?? []).forEach((item, index) => {
+          fields.push(
+            [`invoice.lineItems[${index}].quantity`, item.quantity],
+            [`invoice.lineItems[${index}].unitPrice`, item.unitPrice],
+            [`invoice.lineItems[${index}].lineTotal`, item.lineTotal],
+          );
+        });
+        return fields.filter(([, value]) => value === 0).map(([path]) => path);
       }
 
       function showError(message) {
@@ -29,9 +91,9 @@
         const extraction = record.extraction;
         setText("document-name", record.source.fileName);
         setText("invoice-number", invoice.invoiceNumber);
-        setText("invoice-date", `Ngày phát hành: ${invoice.issueDate}`);
+        setText("invoice-date", invoice.issueDate === null || invoice.issueDate === "" ? missingValue : `Ngày phát hành: ${invoice.issueDate}`);
         setText("invoice-total", formatMoney(invoice.totalAmount));
-        setText("invoice-tax", `Thuế GTGT ${(invoice.taxRate * 100).toFixed(1)}%`);
+        setText("invoice-tax", invoice.taxRate === null ? missingValue : `Thuế GTGT ${(invoice.taxRate * 100).toFixed(1)}%`);
         setText("invoice-confidence", `${(extraction.confidence * 100).toFixed(1)}%`);
         setText("invoice-model", `${extraction.provider} · ${extraction.model}`);
         setText("seller-name", invoice.sellerName);
@@ -41,8 +103,9 @@
         setText("buyer-tax", invoice.buyerTaxId);
         setText("invoice-serial", invoice.serialNumber);
         setText("source-format", record.source.kind.toUpperCase());
+        setText("currency", invoice.currency);
         setText("subtotal", formatMoney(invoice.subtotal));
-        setText("tax-rate", `(${(invoice.taxRate * 100).toFixed(1)}%)`);
+        setText("tax-rate", invoice.taxRate === null ? missingValue : `(${(invoice.taxRate * 100).toFixed(1)}%)`);
         setText("tax-amount", formatMoney(invoice.taxAmount));
         setText("total-amount", formatMoney(invoice.totalAmount));
         setText("source-file", record.source.fileName);
@@ -58,17 +121,19 @@
             timeStyle: "short",
           }).format(new Date(record.createdAt)),
         );
-        setText("items-count", `${invoice.lineItems.length} mặt hàng được trích xuất từ hóa đơn`);
+        setText("items-count", invoice.lineItems === null
+          ? "Thiếu danh sách mặt hàng"
+          : `${invoice.lineItems.length} mặt hàng được trích xuất từ hóa đơn`);
 
         const lineItems = document.querySelector("#line-items");
         lineItems.replaceChildren();
-        invoice.lineItems.forEach((item, index) => {
+        (invoice.lineItems ?? []).forEach((item, index) => {
           const row = document.createElement("tr");
           [
             String(index + 1),
-            item.name,
-            item.unit,
-            String(item.quantity),
+            item.name || missingValue,
+            item.unit || missingValue,
+            item.quantity === null ? missingValue : String(item.quantity),
             formatMoney(item.unitPrice),
             formatMoney(item.lineTotal),
           ].forEach((value, cellIndex) => {
@@ -79,14 +144,30 @@
           });
           lineItems.append(row);
         });
+        if (!invoice.lineItems?.length) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 6;
+          cell.className = "empty-cell";
+          cell.textContent = invoice.lineItems === null ? missingValue : "Không có mặt hàng được trích xuất.";
+          row.append(cell);
+          lineItems.append(row);
+        }
 
         const warnings = document.querySelector("#warnings");
         warnings.replaceChildren();
-        if (extraction.warnings.length) {
+        const missingFields = missingInvoiceFields(invoice);
+        const zeroFields = zeroValuePaths(invoice);
+        const warningMessages = [
+          ...(missingFields.length ? [`Thiếu giá trị: ${missingFields.join(", ")}`] : []),
+          ...(zeroFields.length ? [`Giá trị 0 cần đối chiếu: ${zeroFields.join(", ")}`] : []),
+          ...(extraction.warnings ?? []),
+        ];
+        if (warningMessages.length) {
           const title = document.createElement("strong");
-          title.textContent = "Lưu ý từ mô hình";
+          title.textContent = missingFields.length ? "Giá trị cần đối chiếu" : "Lưu ý từ mô hình";
           const list = document.createElement("ul");
-          extraction.warnings.forEach((warning) => {
+          warningMessages.forEach((warning) => {
             const item = document.createElement("li");
             item.textContent = warning;
             list.append(item);

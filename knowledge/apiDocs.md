@@ -57,7 +57,7 @@ Server-side validation order:
 5. PDF bytes pass through unchanged; PNG/JPEG images are auto-oriented using EXIF, resized to fit 2400×3200 without upscaling, flattened on white and encoded as JPEG quality 92.
 6. OCR runs locally using Tesseract (`TESSERACT_LANGUAGES`, default `vie+eng`). PDF pages are rendered locally for OCR (maximum 50 pages); each page includes text, word bounding boxes in pixels, and confidence scores.
 7. The same prepared document is sent concurrently to each configured Gemini Vision model. `GEMINI_MODELS` is a comma-separated model list; if unset, the existing `GEMINI_MODEL` (or default) is used.
-8. Each Vision result and OCR evidence are validated by `extractionResultSchema` before storage. The first configured Vision result populates the existing `invoice` and `extraction` fields; `extraction.visionModels` preserves all model outputs and `extraction.ocr` contains OCR evidence. No consensus or reconciliation is performed in this stage.
+8. Each Vision result and OCR evidence are validated by `extractionResultSchema` before storage. All required invoice attributes must be present; unknown values may be `null` or `0` and are stored as returned. Missing attributes are rejected with their JSON paths. The first configured Vision result populates the existing `invoice` and `extraction` fields; `extraction.visionModels` preserves all model outputs and `extraction.ocr` contains OCR evidence. No consensus or reconciliation is performed in this stage.
 
 The response's `source.fileName`, `source.mimeType`, `source.sizeBytes`, `source.kind`, `source.estimatedPages`,
 and `source.contentHash` describe the **original upload**. Image conversion is temporary. OCR is local;
@@ -155,7 +155,7 @@ Bounding-box coordinates are pixels in the rendered/prepared page. Older stored 
 | 503 | `OCR_NOT_AVAILABLE` | Tesseract worker or local OCR language data could not be initialized |
 | 422 | `PDF_RENDER_FAILED` | PDF cannot be read or rendered for the OCR branch |
 | 500 | `OCR_CONFIGURATION_INVALID` / `GEMINI_MODEL_CONFIGURATION_INVALID` | invalid configured language or Vision model list |
-| 422 | `INCOMPLETE_EXTRACTION` | Gemini returned a field with an invalid format; the error message lists field paths without exposing extracted values |
+| 422 | `INCOMPLETE_EXTRACTION` | Gemini returned malformed invoice data or omitted a required attribute; the error message lists affected JSON paths without exposing extracted values |
 | 429 | `GEMINI_RATE_LIMITED` | Gemini quota or rate limit |
 | 502 | `GEMINI_MODEL_NOT_FOUND` | configured Gemini model is unavailable to the API key or does not support `generateContent`; check `GEMINI_MODEL` / `GEMINI_MODELS` |
 | 502 | `GEMINI_AUTH_ERROR` / `GEMINI_PROVIDER_ERROR` | invalid key or provider failure; unexpected provider HTTP status is included in the message and server log (status/model only) |

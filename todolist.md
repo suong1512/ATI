@@ -1,6 +1,14 @@
 # Todolist
 
-Last updated: 28/10/2026 · Active task: **TASK-REVIEW-QUEUE-NAV-28-10**
+Last updated: 28/10/2026 · Active task: **TASK-NULLABLE-INVOICE-FIELDS-28-10**
+
+## TASK-NULLABLE-INVOICE-FIELDS-28-10 — Accept complete invoice JSON with unknown values
+
+- [x] Allow `null`/`0` values in present invoice attributes, including currency.
+- [x] Reject missing invoice attributes and report their JSON paths.
+- [x] Display missing values clearly on the invoice detail page and keep upload/history views safe.
+- [x] Update extraction/API behavior documentation.
+- [x] Run typecheck, lint, frontend syntax checks and production build.
 
 ## TASK-REVIEW-QUEUE-NAV-28-10 — Review Queue sidebar navigation
 

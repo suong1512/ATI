@@ -17,20 +17,20 @@ const INVOICE_EXTRACTION_PROMPT = `Read the attached invoice document and extrac
 Return only a JSON object with this exact shape:
 {
   "invoice": {
-    "invoiceNumber": "string",
-    "serialNumber": "string",
-    "issueDate": "YYYY-MM-DD",
-    "sellerName": "string",
-    "sellerTaxId": "10 or 13 digits, with an optional hyphen before the final 3 digits",
-    "sellerAddress": "string",
-    "buyerName": "string",
-    "buyerTaxId": "10 or 13 digits, with an optional hyphen before the final 3 digits",
-    "currency": "VND",
-    "lineItems": [{"name":"string","unit":"string","quantity":0,"unitPrice":0,"lineTotal":0}],
-    "subtotal": 0,
-    "taxRate": 0,
-    "taxAmount": 0,
-    "totalAmount": 0
+    "invoiceNumber": "string or null",
+    "serialNumber": "string or null",
+    "issueDate": "YYYY-MM-DD or null",
+    "sellerName": "string or null",
+    "sellerTaxId": "string or null",
+    "sellerAddress": "string or null",
+    "buyerName": "string or null",
+    "buyerTaxId": "string or null",
+    "currency": "currency string, 0, or null",
+    "lineItems": [{"name":"string or null","unit":"string or null","quantity":"number or null","unitPrice":"number or null","lineTotal":"number or null"}],
+    "subtotal": "number or null",
+    "taxRate": "number or null",
+    "taxAmount": "number or null",
+    "totalAmount": "number or null"
   },
   "confidence": 0.0,
   "warnings": []
@@ -40,7 +40,8 @@ Rules:
 - Preserve Vietnamese names and text. Normalize dates to YYYY-MM-DD.
 - Use numeric amounts without thousands separators; taxRate is a decimal (10% = 0.1).
 - confidence is your 0-to-1 estimate of legibility and completeness, not a guarantee.
-- If a required invoice field or line item is missing or unreadable, explain that in a "warnings" array and use an empty string for missing text fields, 0 for missing numbers, and [] for missing line items.
+- Include every invoice attribute shown in the JSON shape, even when its value is unknown. Use null for unknown text, currency, or numeric values; use [] when no line items can be read. Never omit an attribute.
+- For each missing or unreadable value, include a warning naming its exact JSON path (for example "invoice.currency" or "invoice.totalAmount"). A numeric 0 may mean the value is unreadable; include the corresponding path in warnings.
 - Do not include markdown fences or any text outside the JSON object.`;
 
 export class GeminiExtractionError extends Error {
@@ -55,26 +56,26 @@ export class GeminiExtractionError extends Error {
 }
 
 type GeminiInvoiceResponse = {
-  invoiceNumber: string;
-  serialNumber: string;
-  issueDate: string;
-  sellerName: string;
-  sellerTaxId: string;
-  sellerAddress: string;
-  buyerName: string;
-  buyerTaxId: string;
-  currency: "VND";
+  invoiceNumber: string | null;
+  serialNumber: string | null;
+  issueDate: string | null;
+  sellerName: string | null;
+  sellerTaxId: string | null;
+  sellerAddress: string | null;
+  buyerName: string | null;
+  buyerTaxId: string | null;
+  currency: string | number | null;
   lineItems: Array<{
-    name: string;
-    unit: string;
-    quantity: number;
-    unitPrice: number;
-    lineTotal: number;
-  }>;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  totalAmount: number;
+    name: string | null;
+    unit: string | null;
+    quantity: number | null;
+    unitPrice: number | null;
+    lineTotal: number | null;
+  }> | null;
+  subtotal: number | null;
+  taxRate: number | null;
+  taxAmount: number | null;
+  totalAmount: number | null;
   confidence: number;
   warnings?: string[];
 };
@@ -121,10 +122,23 @@ function parseInvoiceResponse(text: string): GeminiInvoiceResponse {
     warnings: z.array(z.string()).optional(),
   }).safeParse(value);
   if (!parsed.success) {
+    const missingFields = [...new Set(
+      parsed.error.issues
+        .filter((issue) => issue.code === "invalid_type" && issue.input === undefined)
+        .map((issue) => issue.path.join(".") || "invoice"),
+    )];
+    if (missingFields.length) {
+      throw geminiError(
+        422,
+        `JSON Gemini bị thiếu trường bắt buộc: ${missingFields.join(", ")}.`,
+        "INCOMPLETE_EXTRACTION",
+      );
+    }
+
     const invalidFields = [...new Set(parsed.error.issues.map((issue) => issue.path.join(".") || "invoice"))];
     throw geminiError(
       422,
-      `Kết quả Gemini có trường không đúng định dạng. Hãy kiểm tra hóa đơn và thử lại. Trường cần kiểm tra: ${invalidFields.join(", ")}.`,
+      `Kết quả Gemini có trường không đúng kiểu dữ liệu. Trường cần kiểm tra: ${invalidFields.join(", ")}.`,
       "INCOMPLETE_EXTRACTION",
     );
   }

@@ -108,7 +108,7 @@ function buildInvoice(random: () => number): Invoice {
     });
   }
 
-  const subtotal = lineItems.reduce((sum, item) => sum + item.lineTotal, 0);
+  const subtotal = lineItems.reduce((sum, item) => sum + (item.lineTotal ?? 0), 0);
   const taxRate = random() < 0.5 ? 0.08 : 0.1;
   const taxAmount = Math.round(subtotal * taxRate);
 

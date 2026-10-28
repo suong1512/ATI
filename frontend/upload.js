@@ -103,6 +103,7 @@
       }
 
       function formatMoney(amount) {
+        if (amount === null || amount === undefined) return "Thiếu giá trị";
         return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(amount);
       }
 
@@ -118,6 +119,7 @@
           ["Địa chỉ người bán", invoice.sellerAddress],
           ["Tên người mua", invoice.buyerName],
           ["Mã số thuế người mua", invoice.buyerTaxId],
+          ["Tiền tệ", invoice.currency],
         ];
         const fieldGrid = document.createElement("div");
         fieldGrid.className = "extraction-fields";
@@ -127,7 +129,7 @@
           const heading = document.createElement("span");
           heading.textContent = label;
           const content = document.createElement("strong");
-          content.textContent = value || "—";
+          content.textContent = value === null || value === undefined || value === "" ? "Thiếu giá trị" : String(value);
           field.append(heading, content);
           fieldGrid.append(field);
         });
@@ -148,15 +150,29 @@
         });
         header.append(headerRow);
         const body = document.createElement("tbody");
-        invoice.lineItems.forEach((item) => {
+        (invoice.lineItems ?? []).forEach((item) => {
           const row = document.createElement("tr");
-          [item.name, item.unit, item.quantity, formatMoney(item.unitPrice), formatMoney(item.lineTotal)].forEach((value) => {
+          [
+            item.name || "Thiếu giá trị",
+            item.unit || "Thiếu giá trị",
+            item.quantity ?? "Thiếu giá trị",
+            formatMoney(item.unitPrice),
+            formatMoney(item.lineTotal),
+          ].forEach((value) => {
             const cell = document.createElement("td");
             cell.textContent = value;
             row.append(cell);
           });
           body.append(row);
         });
+        if (!invoice.lineItems?.length) {
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 5;
+          cell.textContent = invoice.lineItems === null ? "Thiếu danh sách mặt hàng" : "Không có mặt hàng được trích xuất.";
+          row.append(cell);
+          body.append(row);
+        }
         table.append(header, body);
         tableScroll.append(table);
         itemSection.append(itemHeading, tableScroll);
@@ -165,7 +181,7 @@
         totals.className = "extraction-totals";
         [
           ["Cộng tiền hàng", formatMoney(invoice.subtotal)],
-          [`Thuế GTGT (${(invoice.taxRate * 100).toFixed(1)}%)`, formatMoney(invoice.taxAmount)],
+          [`Thuế GTGT (${invoice.taxRate === null ? "Thiếu giá trị" : `${(invoice.taxRate * 100).toFixed(1)}%`})`, formatMoney(invoice.taxAmount)],
           ["Tổng thanh toán", formatMoney(invoice.totalAmount)],
         ].forEach(([label, value], index) => {
           const row = document.createElement("div");
@@ -179,7 +195,7 @@
         });
 
         extractionContent.replaceChildren(fieldGrid, itemSection, totals);
-        if (record.extraction.warnings.length) {
+        if (record.extraction.warnings?.length) {
           const warnings = document.createElement("p");
           warnings.className = "extraction-warning";
           warnings.textContent = record.extraction.warnings.join(" ");

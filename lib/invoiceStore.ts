@@ -130,9 +130,9 @@ export async function saveInvoice(
           record.source.sizeBytes,
           record.source.kind,
           record.source.contentHash,
-          record.invoice.invoiceNumber,
-          record.invoice.sellerName,
-          record.invoice.totalAmount,
+          record.invoice.invoiceNumber ?? "",
+          record.invoice.sellerName ?? "",
+          record.invoice.totalAmount ?? 0,
         ],
       );
     } catch (error) {

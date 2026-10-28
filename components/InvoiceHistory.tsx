@@ -32,7 +32,7 @@ export default function InvoiceHistory({ invoices, loading, onRefresh, onClear }
           {invoices.map((item) => (
             <li key={item.recordId}>
               <div>
-                <strong>{item.invoice.invoiceNumber}</strong> — {item.invoice.sellerName}
+                <strong>{item.invoice.invoiceNumber || "Thiếu giá trị"}</strong> — {item.invoice.sellerName || "Thiếu giá trị"}
                 <div className="history-meta">
                   {item.source.fileName} · {item.source.kind.toUpperCase()} · {formatDateTime(item.createdAt)}
                 </div>

@@ -4,7 +4,8 @@ const vndFormatter = new Intl.NumberFormat("vi-VN", {
   maximumFractionDigits: 0,
 });
 
-export function formatVnd(value: number): string {
+export function formatVnd(value: number | null): string {
+  if (value === null) return "Thiếu giá trị";
   return vndFormatter.format(value);
 }
 
@@ -20,6 +21,7 @@ export function formatDateTime(value: string): string {
   return date.toLocaleString("vi-VN");
 }
 
-export function formatPercent(value: number): string {
+export function formatPercent(value: number | null): string {
+  if (value === null) return "Thiếu giá trị";
   return `${Math.round(value * 100)}%`;
 }

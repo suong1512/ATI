@@ -40,6 +40,7 @@ export default function InvoiceResult({ result }: { result: ExtractionResult }) 
         <Field label="Địa chỉ" value={invoice.sellerAddress} />
         <Field label="Người mua" value={invoice.buyerName} />
         <Field label="MST người mua" value={invoice.buyerTaxId} />
+        <Field label="Tiền tệ" value={invoice.currency === null ? null : String(invoice.currency)} />
       </div>
 
       <table>
@@ -53,15 +54,20 @@ export default function InvoiceResult({ result }: { result: ExtractionResult }) 
           </tr>
         </thead>
         <tbody>
-          {invoice.lineItems.map((item) => (
-            <tr key={item.name}>
-              <td>{item.name}</td>
-              <td>{item.unit}</td>
-              <td className="num">{item.quantity}</td>
+          {(invoice.lineItems ?? []).map((item, index) => (
+            <tr key={`${item.name ?? "item"}-${index}`}>
+              <td>{item.name || "Thiếu giá trị"}</td>
+              <td>{item.unit || "Thiếu giá trị"}</td>
+              <td className="num">{item.quantity ?? "Thiếu giá trị"}</td>
               <td className="num">{formatVnd(item.unitPrice)}</td>
               <td className="num">{formatVnd(item.lineTotal)}</td>
             </tr>
           ))}
+          {!invoice.lineItems?.length && (
+            <tr>
+              <td colSpan={5}>{invoice.lineItems === null ? "Thiếu danh sách mặt hàng" : "Không có mặt hàng được trích xuất."}</td>
+            </tr>
+          )}
         </tbody>
       </table>
 
@@ -93,11 +99,11 @@ export default function InvoiceResult({ result }: { result: ExtractionResult }) 
   );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
+function Field({ label, value }: { label: string; value: string | null }) {
   return (
     <dl className="invoice-field">
       <dt>{label}</dt>
-      <dd>{value}</dd>
+      <dd>{value === null || value === "" ? "Thiếu giá trị" : value}</dd>
     </dl>
   );
 }

@@ -8,28 +8,28 @@ import { z } from "zod";
  */
 
 export const lineItemSchema = z.object({
-  name: z.string(),
-  unit: z.string(),
-  quantity: z.number().nonnegative(),
-  unitPrice: z.number().nonnegative(),
-  lineTotal: z.number().nonnegative(),
+  name: z.string().nullable(),
+  unit: z.string().nullable(),
+  quantity: z.number().nullable(),
+  unitPrice: z.number().nullable(),
+  lineTotal: z.number().nullable(),
 });
 
 export const invoiceSchema = z.object({
-  invoiceNumber: z.string(),
-  serialNumber: z.string(),
-  issueDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).or(z.literal("")),
-  sellerName: z.string(),
-  sellerTaxId: z.string().regex(/^\d{10}(-\d{3})?$/).or(z.literal("")),
-  sellerAddress: z.string(),
-  buyerName: z.string(),
-  buyerTaxId: z.string().regex(/^\d{10}(-\d{3})?$/).or(z.literal("")),
-  currency: z.literal("VND"),
-  lineItems: z.array(lineItemSchema),
-  subtotal: z.number().nonnegative(),
-  taxRate: z.number().min(0).max(1),
-  taxAmount: z.number().nonnegative(),
-  totalAmount: z.number().nonnegative(),
+  invoiceNumber: z.string().nullable(),
+  serialNumber: z.string().nullable(),
+  issueDate: z.string().nullable(),
+  sellerName: z.string().nullable(),
+  sellerTaxId: z.string().nullable(),
+  sellerAddress: z.string().nullable(),
+  buyerName: z.string().nullable(),
+  buyerTaxId: z.string().nullable(),
+  currency: z.union([z.string(), z.number(), z.null()]),
+  lineItems: z.array(lineItemSchema).nullable(),
+  subtotal: z.number().nullable(),
+  taxRate: z.number().nullable(),
+  taxAmount: z.number().nullable(),
+  totalAmount: z.number().nullable(),
 });
 
 export const documentKindSchema = z.enum(["pdf", "png", "jpeg"]);
