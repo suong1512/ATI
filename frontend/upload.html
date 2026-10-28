@@ -45,6 +45,15 @@
             </svg>
             Trạng thái xử lý
           </a>
+          <a class="nav-link" href="#review-queue">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 4.75h10l4 4v10.5H5z"/>
+              <path d="M15 4.75v4h4M8 13h3M8 16h3"/>
+              <circle cx="16.5" cy="16.5" r="3.5"/>
+              <path d="m19 19 2 2"/>
+            </svg>
+            <span>Review Queue / Hàng đợi duyệt</span>
+          </a>
           <a class="nav-link" href="#recent">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 8V4m0 4h4"/>
@@ -214,9 +223,10 @@
           </section>
 
           <section class="panel recent-panel" id="recent">
-            <header class="panel-heading recent-heading">
+            <header class="panel-heading recent-heading" id="review-queue">
               <div>
                 <h2>Hóa đơn đã lưu</h2>
+                <p>Chọn hóa đơn để kiểm tra thông tin trích xuất.</p>
                 <p id="history-description">Lịch sử lưu cục bộ, tối đa 50 bản ghi gần nhất</p>
               </div>
               <div class="history-actions">

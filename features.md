@@ -69,6 +69,13 @@
 * **Expected result:** dashboard history and counts reflect API data; search filters by invoice/file/party fields; upload feedback is explicit; successful results show structured data and JSON download; detail links show the selected record.
 * **Status:** Partial — dashboard, search, history and detail navigation are implemented; live upload requires a Gemini API key.
 
+## F-08 — Review Queue sidebar navigation
+
+* **Description:** The sidebar includes a *Review Queue / Hàng đợi duyệt* shortcut to saved invoices so users can open and inspect extracted details.
+* **How to test:** Open the home page and select *Review Queue / Hàng đợi duyệt*; the saved-invoice list is brought into view and the selected sidebar item is highlighted.
+* **Expected result:** users can navigate directly to extracted invoices to review them. Approval statuses and actions are not implemented.
+* **Status:** Partial — navigation is implemented; there is no separate persisted approval workflow.
+
 ---
 
 ## Not implemented (do not claim these work)

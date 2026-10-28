@@ -159,9 +159,10 @@ a {
   align-items: center;
   gap: 8px;
   border-radius: 3px;
-  padding: 0 8px;
+  padding: 5px 8px;
   color: #4b5563;
   font-size: 9px;
+  line-height: 1.35;
 }
 
 .nav-link:hover, .nav-link.active {

@@ -1,6 +1,13 @@
 # Todolist
 
-Last updated: 28/10/2026 · Active task: **TASK-DOCUMENT-PREVIEW-28-10**
+Last updated: 28/10/2026 · Active task: **TASK-REVIEW-QUEUE-NAV-28-10**
+
+## TASK-REVIEW-QUEUE-NAV-28-10 — Review Queue sidebar navigation
+
+- [x] Add a bilingual Review Queue item to the sidebar.
+- [x] Link it to the saved-invoice review list and highlight the selected navigation item.
+- [x] Document that approval states/actions are not yet part of the application.
+- [x] Run frontend syntax, lint, typecheck and production build checks.
 
 ## TASK-DOCUMENT-PREVIEW-28-10 — Original invoice preview
 

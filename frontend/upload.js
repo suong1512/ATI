@@ -16,6 +16,7 @@
       const extractionJson = document.querySelector("#extraction-json");
       const downloadExtractionButton = document.querySelector("#download-extraction-json");
       const invalidCount = document.querySelector("#stat-invalid");
+      const navLinks = document.querySelectorAll(".nav-link");
       const historyColumnCount = 7;
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
@@ -25,6 +26,22 @@
       let rejectedThisSession = 0;
       let currentRecords = [];
       let currentExtraction = null;
+
+      function updateActiveNav() {
+        const target = window.location.hash || "#upload";
+        navLinks.forEach((link) => {
+          link.classList.toggle("active", link.hash === target);
+        });
+      }
+
+      navLinks.forEach((link) => {
+        link.addEventListener("click", () => {
+          navLinks.forEach((navLink) => navLink.classList.remove("active"));
+          link.classList.add("active");
+        });
+      });
+      window.addEventListener("hashchange", updateActiveNav);
+      updateActiveNav();
 
       function incrementInvalidCount() {
         rejectedThisSession += 1;
