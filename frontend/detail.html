@@ -25,23 +25,6 @@
       </header>
       <div class="notice" id="detail-message" role="status" hidden></div>
       <div class="detail-content" id="detail-content" hidden>
-        <section class="summary-grid" aria-label="Thông tin hóa đơn">
-          <article class="summary-card">
-            <span class="field-label">Số hóa đơn</span>
-            <strong class="summary-value" id="invoice-number">—</strong>
-            <span class="field-note" id="invoice-date">—</span>
-          </article>
-          <article class="summary-card total-card">
-            <span class="field-label">Tổng thanh toán</span>
-            <strong class="summary-value" id="invoice-total">—</strong>
-            <span class="field-note" id="invoice-tax">Đã bao gồm thuế GTGT</span>
-          </article>
-          <article class="summary-card">
-            <span class="field-label">Độ tin cậy trích xuất</span>
-            <strong class="summary-value" id="invoice-confidence">—</strong>
-            <span class="field-note" id="invoice-model">—</span>
-          </article>
-        </section>
         <section class="panel document-panel">
           <header class="panel-header document-header">
             <h2>Hóa đơn gốc</h2>
@@ -58,71 +41,90 @@
             hidden
           ></iframe>
         </section>
-        <section class="party-grid">
-          <article class="panel">
-            <header class="panel-header">
-              <span class="section-icon seller-icon" aria-hidden="true">B</span>
-              <h2>Thông tin người bán</h2>
+        <div class="invoice-data">
+          <section class="summary-grid" aria-label="Thông tin hóa đơn">
+            <article class="summary-card">
+              <span class="field-label">Số hóa đơn</span>
+              <strong class="summary-value" id="invoice-number">—</strong>
+              <span class="field-note" id="invoice-date">—</span>
+            </article>
+            <article class="summary-card total-card">
+              <span class="field-label">Tổng thanh toán</span>
+              <strong class="summary-value" id="invoice-total">—</strong>
+              <span class="field-note" id="invoice-tax">Đã bao gồm thuế GTGT</span>
+            </article>
+            <article class="summary-card">
+              <span class="field-label">Độ tin cậy trích xuất</span>
+              <strong class="summary-value" id="invoice-confidence">—</strong>
+              <span class="field-note" id="invoice-model">—</span>
+            </article>
+          </section>
+          <section class="party-grid">
+            <article class="panel">
+              <header class="panel-header">
+                <span class="section-icon seller-icon" aria-hidden="true">B</span>
+                <h2>Thông tin người bán</h2>
+              </header>
+              <dl class="field-list">
+                <div><dt>Tên đơn vị</dt><dd id="seller-name">—</dd></div>
+                <div><dt>Mã số thuế</dt><dd id="seller-tax">—</dd></div>
+                <div><dt>Địa chỉ</dt><dd id="seller-address">—</dd></div>
+              </dl>
+            </article>
+            <article class="panel">
+              <header class="panel-header">
+                <span class="section-icon buyer-icon" aria-hidden="true">M</span>
+                <h2>Thông tin người mua</h2>
+              </header>
+              <dl class="field-list">
+                <div><dt>Tên đơn vị</dt><dd id="buyer-name">—</dd></div>
+                <div><dt>Mã số thuế</dt><dd id="buyer-tax">—</dd></div>
+                <div><dt>Ký hiệu hóa đơn</dt><dd id="invoice-serial">—</dd></div>
+              </dl>
+            </article>
+          </section>
+          <section class="panel items-panel">
+            <header class="panel-header items-header">
+              <div><h2>Hàng hóa và dịch vụ</h2><p id="items-count">Các mặt hàng được trích xuất từ hóa đơn</p></div>
+              <span class="format-badge" id="source-format">—</span>
             </header>
-            <dl class="field-list">
-              <div><dt>Tên đơn vị</dt><dd id="seller-name">—</dd></div>
-              <div><dt>Mã số thuế</dt><dd id="seller-tax">—</dd></div>
-              <div><dt>Địa chỉ</dt><dd id="seller-address">—</dd></div>
-            </dl>
-          </article>
-          <article class="panel">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>TÊN HÀNG HÓA / DỊCH VỤ</th>
+                    <th>ĐƠN VỊ</th>
+                    <th class="numeric">SỐ LƯỢNG</th>
+                    <th class="numeric">ĐƠN GIÁ</th>
+                    <th class="numeric">THÀNH TIỀN</th>
+                  </tr>
+                </thead>
+                <tbody id="line-items">
+                  <tr><td colspan="6" class="empty-cell">Đang tải...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="totals">
+              <div><span>Tiền tệ</span><strong id="currency">—</strong></div>
+              <div><span>Cộng tiền hàng</span><strong id="subtotal">—</strong></div>
+              <div><span>Thuế GTGT <span id="tax-rate"></span></span><strong id="tax-amount">—</strong></div>
+              <div class="grand-total"><span>Tổng thanh toán</span><strong id="total-amount">—</strong></div>
+            </div>
+          </section>
+          <section class="panel metadata-panel">
             <header class="panel-header">
-              <span class="section-icon buyer-icon" aria-hidden="true">M</span>
-              <h2>Thông tin người mua</h2>
+              <h2>Thông tin xử lý</h2>
             </header>
-            <dl class="field-list">
-              <div><dt>Tên đơn vị</dt><dd id="buyer-name">—</dd></div>
-              <div><dt>Mã số thuế</dt><dd id="buyer-tax">—</dd></div>
-              <div><dt>Ký hiệu hóa đơn</dt><dd id="invoice-serial">—</dd></div>
+            <dl class="metadata-grid">
+              <div><dt>Tên tệp</dt><dd id="source-file">—</dd></div>
+              <div><dt>Định dạng</dt><dd id="source-type">—</dd></div>
+              <div><dt>Thời gian xử lý</dt><dd id="processing-time">—</dd></div>
+              <div><dt>Thời điểm trích xuất</dt><dd id="created-at">—</dd></div>
             </dl>
-          </article>
-        </section>
-        <section class="panel items-panel">
-          <header class="panel-header items-header">
-            <div><h2>Hàng hóa và dịch vụ</h2><p id="items-count">Các mặt hàng được trích xuất từ hóa đơn</p></div>
-            <span class="format-badge" id="source-format">—</span>
-          </header>
-          <div class="table-scroll">
-            <table>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>TÊN HÀNG HÓA / DỊCH VỤ</th>
-                  <th>ĐƠN VỊ</th>
-                  <th class="numeric">SỐ LƯỢNG</th>
-                  <th class="numeric">ĐƠN GIÁ</th>
-                  <th class="numeric">THÀNH TIỀN</th>
-                </tr>
-              </thead>
-              <tbody id="line-items">
-                <tr><td colspan="6" class="empty-cell">Đang tải...</td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="totals">
-            <div><span>Tiền tệ</span><strong id="currency">—</strong></div>
-            <div><span>Cộng tiền hàng</span><strong id="subtotal">—</strong></div>
-            <div><span>Thuế GTGT <span id="tax-rate"></span></span><strong id="tax-amount">—</strong></div>
-            <div class="grand-total"><span>Tổng thanh toán</span><strong id="total-amount">—</strong></div>
-          </div>
-        </section>
-        <section class="panel metadata-panel">
-          <header class="panel-header">
-            <h2>Thông tin xử lý</h2>
-          </header>
-          <dl class="metadata-grid">
-            <div><dt>Tên tệp</dt><dd id="source-file">—</dd></div>
-            <div><dt>Định dạng</dt><dd id="source-type">—</dd></div>
-            <div><dt>Thời gian xử lý</dt><dd id="processing-time">—</dd></div>
-            <div><dt>Thời điểm trích xuất</dt><dd id="created-at">—</dd></div>
-          </dl>
-          <div class="warnings" id="warnings" hidden></div>
-        </section>
+            <div class="warnings" id="warnings" hidden></div>
+          </section>
+        </div>
       </div>
       <footer class="page-footer">
         <a href="/" target="_top">Smart Document Processing</a>

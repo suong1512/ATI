@@ -40,7 +40,7 @@
 
 ## F-03 — Invoice details page
 
-* **Description:** Selecting an invoice in the history opens `detail.html?id=<recordId>`, which shows the extracted fields and an inline preview of the saved original image or PDF, with a link to open the original document.
+* **Description:** Selecting an invoice in the history opens `detail.html?id=<recordId>`, with a side-by-side layout on wide screens: the saved original image/PDF on one half and extracted invoice information on the other. The layout stacks on narrow screens. A link opens the original document separately.
 * **How to test:** upload an image or PDF after configuring Gemini, open it using *Xem chi tiết*, and compare the preview with the extracted values.
 * **Expected result:** the selected invoice and its original document are shown; older records without a stored original display a clear notice.
 * **Status:** Partial — save/retrieve and preview code is implemented; end-to-end preview still needs verification with a configured database and a new upload.

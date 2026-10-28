@@ -36,7 +36,7 @@ button {
 }
 
 .detail-page {
-  width: min(1120px, calc(100% - 40px));
+  width: min(1600px, calc(100% - 40px));
   margin: 0 auto;
   padding: 26px 0 20px;
 }
@@ -141,6 +141,65 @@ h1 {
 
 .notice[hidden], .detail-content[hidden], .warnings[hidden] {
   display: none;
+}
+
+.detail-content {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 16px;
+}
+
+.document-panel {
+  position: sticky;
+  top: 16px;
+}
+
+.document-header {
+  justify-content: space-between;
+}
+
+.document-header a {
+  color: var(--blue);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.document-preview-image {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 150px);
+  min-height: 360px;
+  max-height: 900px;
+  object-fit: contain;
+  background: #f9faff;
+  padding: 14px;
+}
+
+.document-preview-pdf {
+  display: block;
+  width: 100%;
+  height: calc(100vh - 150px);
+  min-height: 360px;
+  border: 0;
+  background: #f9faff;
+}
+
+.document-preview-message {
+  padding: 16px;
+  color: var(--muted);
+}
+
+.document-preview-image[hidden],
+.document-preview-pdf[hidden],
+.document-preview-message[hidden] {
+  display: none;
+}
+
+.invoice-data {
+  display: grid;
+  min-width: 0;
+  gap: 16px;
 }
 
 .summary-grid {
@@ -350,7 +409,7 @@ td {
 }
 
 .metadata-panel {
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .metadata-grid {
@@ -394,7 +453,7 @@ td {
   font-size: 11px;
 }
 
-@media (max-width: 700px) {
+@media (max-width: 800px) {
   .detail-page {
     width: min(100% - 24px, 560px);
     padding-top: 17px;
@@ -430,44 +489,29 @@ td {
     font-size: 19px;
   }
 
+  .detail-content {
+    grid-template-columns: 1fr;
+  }
+
+  .invoice-data {
+    gap: 10px;
+  }
+
   .document-panel {
+    position: static;
     margin-bottom: 16px;
   }
 
-  .document-header {
-    justify-content: space-between;
-  }
-
-  .document-header a {
-    color: var(--blue);
-    font-size: 12px;
-    font-weight: 600;
-  }
-
   .document-preview-image {
-    display: block;
-    width: 100%;
+    height: 75vh;
+    min-height: 280px;
     max-height: 820px;
-    object-fit: contain;
-    background: #f9faff;
-    padding: 14px;
   }
 
   .document-preview-pdf {
-    display: block;
     width: 100%;
-    height: min(820px, 85vh);
-    border: 0;
-    background: #f9faff;
-  }
-
-  .document-preview-message {
-    padding: 16px;
-    color: var(--muted);
-  }
-
-  .document-preview-image[hidden], .document-preview-pdf[hidden], .document-preview-message[hidden] {
-    display: none;
+    height: 75vh;
+    min-height: 280px;
   }
 
   .party-grid {
