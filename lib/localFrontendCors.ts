@@ -1,7 +1,9 @@
-const localFrontendOrigins = new Set([
-  "http://localhost:4173",
-  "http://127.0.0.1:4173",
-]);
+const localFrontendPorts = ["4173", "5173", "5500", "5501"];
+const localFrontendOrigins = new Set(
+  ["localhost", "127.0.0.1"].flatMap((host) =>
+    localFrontendPorts.map((port) => `http://${host}:${port}`),
+  ),
+);
 
 export function withLocalFrontendCors(request: Request, response: Response): Response {
   const origin = request.headers.get("origin");

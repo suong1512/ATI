@@ -3,7 +3,7 @@
 > User-visible functionality of the project.
 > Status vocabulary: **Working · Partial · Mocked · In-Progress · Blocked**.
 > Architecture: `knowledge/architecture.md` · API details: `knowledge/apiDocs.md`
-> Last updated: 28/10/2026.
+> Last updated: 29/10/2026.
 > `Working` = verified end-to-end at HTTP/data level · `Partial` = verified at API/data level, UI not
 > click-tested in a browser yet · `Mocked` = works, but the data is simulated.
 > Evidence: `state/task_30_09_state.md` §5 and `state/task_26_10_ui_state.md` §5.
@@ -65,7 +65,7 @@
 ## F-06 — Document upload dashboard
 
 * **Description:** The home page at `/` displays the Vietnamese dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. The dashboard reads history from `GET /api/invoices`, supports history search, refresh and confirmed reset, uploads selected PDF/JPG/PNG files to `POST /api/extract`, shows extracted fields and raw JSON, and provides JSON download. History links open the matching invoice detail page.
-* **How to test:** Run `npm run dev` and open <http://localhost:3000/>. Search the existing history, open a record's details, and try refresh/reset (reset asks for confirmation). For upload, choose a readable PDF/JPG/PNG; a live extraction requires `GEMINI_API_KEY`.
+* **How to test:** Run `npm run dev` and open <http://localhost:3000/>. Search the existing history, open a record's details, and try refresh/reset (reset asks for confirmation). For upload, choose a readable PDF/JPG/PNG; a live extraction requires `GEMINI_API_KEY`. If opening the frontend through a standalone preview on ports 4173, 5173, 5500 or 5501, the frontend sends API requests to the Next.js server on port 3000.
 * **Expected result:** dashboard history and counts reflect API data; search filters by invoice/file/party fields; upload feedback is explicit; successful results show structured data and JSON download; detail links show the selected record.
 * **Status:** Partial — dashboard, search, history and detail navigation are implemented; live upload requires a Gemini API key.
 

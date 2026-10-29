@@ -5,9 +5,28 @@
       const documentPreviewPdf = document.querySelector("#document-preview-pdf");
       const documentPreviewMessage = document.querySelector("#document-preview-message");
       const openOriginalDocument = document.querySelector("#open-original-document");
+      const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
+      const apiOrigin = standalonePreviewPorts.includes(location.port) || location.protocol === "file:"
+        ? `${location.protocol === "https:" ? "https:" : "http:"}//${location.hostname || "localhost"}:3000`
+        : location.origin;
       let currentRecord = null;
       let documentPreviewUrl = null;
       const missingValue = "Thiếu giá trị";
+
+      async function readJsonResponse(response, endpoint) {
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.toLowerCase().includes("json")) {
+          throw new Error(
+            `${endpoint} trả về HTML thay vì JSON (HTTP ${response.status}). Hãy chạy máy chủ Next.js bằng “npm run dev” và mở giao diện tại cổng 3000.`,
+          );
+        }
+
+        try {
+          return await response.json();
+        } catch {
+          throw new Error(`${endpoint} trả về JSON không hợp lệ (HTTP ${response.status}).`);
+        }
+      }
 
       function setText(id, value) {
         document.querySelector(`#${id}`).textContent =
@@ -186,7 +205,7 @@
       }
 
       async function loadDocumentPreview(record) {
-        const documentUrl = `/api/invoices/${encodeURIComponent(record.recordId)}/document`;
+        const documentUrl = `${apiOrigin}/api/invoices/${encodeURIComponent(record.recordId)}/document`;
         try {
           const response = await fetch(documentUrl, { cache: "no-store" });
           if (!response.ok) {
@@ -225,8 +244,8 @@
         }
 
         try {
-          const response = await fetch("/api/invoices", { cache: "no-store" });
-          const payload = await response.json();
+          const response = await fetch(`${apiOrigin}/api/invoices`, { cache: "no-store" });
+          const payload = await readJsonResponse(response, "/api/invoices");
           if (!response.ok || !payload.ok || !Array.isArray(payload.data)) {
             throw new Error(
               payload.error?.message ||

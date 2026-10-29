@@ -1,6 +1,13 @@
 # Todolist
 
-Last updated: 28/10/2026 · Active task: **TASK-NULLABLE-INVOICE-FIELDS-28-10**
+Last updated: 29/10/2026 · Active task: **TASK-NULLABLE-INVOICE-FIELDS-28-10**
+
+## TASK-API-PREVIEW-PORT-29-10 — Route preview API requests to Next.js
+
+- [x] Route frontend previews on common development ports to the Next.js API on port 3000.
+- [x] Explain non-JSON API responses with an actionable server-start instruction.
+- [x] Apply the same API handling to invoice detail pages.
+- [x] Update the frontend usage note and run focused validation.
 
 ## TASK-NULLABLE-INVOICE-FIELDS-28-10 — Accept complete invoice JSON with unknown values
 

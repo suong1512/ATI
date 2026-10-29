@@ -20,12 +20,28 @@
       const historyColumnCount = 7;
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
-      const apiOrigin = location.port === "4173" || location.protocol === "file:"
+      const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
+      const apiOrigin = standalonePreviewPorts.includes(location.port) || location.protocol === "file:"
         ? `${location.protocol === "https:" ? "https:" : "http:"}//${location.hostname || "localhost"}:3000`
         : location.origin;
       let rejectedThisSession = 0;
       let currentRecords = [];
       let currentExtraction = null;
+
+      async function readJsonResponse(response, endpoint) {
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.toLowerCase().includes("json")) {
+          throw new Error(
+            `${endpoint} trả về HTML thay vì JSON (HTTP ${response.status}). Hãy chạy máy chủ Next.js bằng “npm run dev” và mở giao diện tại cổng 3000.`,
+          );
+        }
+
+        try {
+          return await response.json();
+        } catch {
+          throw new Error(`${endpoint} trả về JSON không hợp lệ (HTTP ${response.status}).`);
+        }
+      }
 
       function updateActiveNav() {
         const target = window.location.hash || "#upload";
@@ -320,9 +336,12 @@
       }
 
       async function loadInvoices() {
-        const response = await fetch(`${apiOrigin}/api/invoices`, { cache: "no-store" });
-        if (!response.ok) throw new Error(`Máy chủ trả về lỗi ${response.status}.`);
-        const result = await response.json();
+        const endpoint = `${apiOrigin}/api/invoices`;
+        const response = await fetch(endpoint, { cache: "no-store" });
+        const result = await readJsonResponse(response, "/api/invoices");
+        if (!response.ok) {
+          throw new Error(result.error?.message || `Máy chủ trả về lỗi ${response.status}.`);
+        }
         if (!result.ok || !Array.isArray(result.data)) throw new Error("Dữ liệu hóa đơn từ máy chủ không hợp lệ.");
         renderInvoices(result.data);
       }
@@ -333,7 +352,7 @@
           const formData = new FormData();
           formData.append("file", file);
           const response = await fetch(`${apiOrigin}/api/extract`, { method: "POST", body: formData });
-          const result = await response.json();
+          const result = await readJsonResponse(response, "/api/extract");
           if (!response.ok || !result.ok || !result.data) {
             throw new Error(result.error?.message || `Máy chủ trả về lỗi ${response.status}.`);
           }
@@ -396,7 +415,7 @@
         clearHistoryButton.disabled = true;
         try {
           const response = await fetch(`${apiOrigin}/api/invoices`, { method: "DELETE" });
-          const result = await response.json();
+          const result = await readJsonResponse(response, "/api/invoices");
           if (!response.ok || !result.ok) {
             throw new Error(result.error?.message || `Máy chủ trả về lỗi ${response.status}.`);
           }
