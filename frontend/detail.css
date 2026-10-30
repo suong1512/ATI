@@ -44,9 +44,9 @@ button {
 
 .topbar-brand {
   display: flex;
-  width: clamp(210px, 15.4vw, 268px);
+  width: clamp(300px, 24vw, 330px);
   min-height: 50px;
-  flex: 0 0 clamp(210px, 15.4vw, 268px);
+  flex: 0 0 clamp(300px, 24vw, 330px);
   align-items: center;
   gap: 10px;
   border-right: 1px solid var(--line);
@@ -60,14 +60,12 @@ button {
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 4px;
-  background: var(--blue);
 }
 
 .topbar-brand-mark img {
   display: block;
-  width: 22px;
-  height: 27px;
+  width: 30px;
+  height: 36px;
   object-fit: contain;
 }
 
@@ -77,6 +75,7 @@ button {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .topbar-brand-copy small {
@@ -91,12 +90,13 @@ button {
   min-width: 0;
   flex: 1;
   align-items: center;
+  justify-content: flex-end;
   padding: 0 24px;
 }
 
 .topbar-search {
   display: flex;
-  width: 100%;
+  width: min(420px, 100%);
   min-height: 38px;
   align-items: center;
   gap: 6px;
@@ -141,7 +141,7 @@ button {
   font-size: 12px;
 }
 
-.breadcrumb a, .back-link, .page-footer a {
+.breadcrumb a, .page-footer a {
   color: var(--blue);
 }
 
@@ -151,13 +151,6 @@ button {
   justify-content: space-between;
   gap: 20px;
   margin: 28px 0 22px;
-}
-
-.back-link {
-  display: inline-block;
-  margin-bottom: 12px;
-  font-size: 12px;
-  font-weight: 600;
 }
 
 h1, h2, p {
@@ -499,8 +492,8 @@ td {
 
 @media (max-width: 800px) {
   .topbar-brand {
-    width: 210px;
-    flex-basis: 210px;
+    width: 280px;
+    flex-basis: 280px;
   }
 
   .topbar-search-area {
@@ -576,9 +569,9 @@ td {
   }
 
   .topbar-brand {
-    width: 154px;
+    width: 230px;
     min-height: 54px;
-    flex-basis: 154px;
+    flex-basis: 230px;
     gap: 7px;
     padding: 6px 9px;
   }
@@ -589,13 +582,12 @@ td {
   }
 
   .topbar-brand-mark img {
-    width: 19px;
-    height: 23px;
+    width: 26px;
+    height: 31px;
   }
 
   .topbar-brand-copy strong {
-    max-width: 105px;
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .topbar-brand-copy small {
@@ -607,6 +599,7 @@ td {
   }
 
   .topbar-search {
+    width: min(220px, 100%);
     min-height: 32px;
     gap: 5px;
     padding: 0 7px;

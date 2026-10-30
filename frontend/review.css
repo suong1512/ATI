@@ -36,9 +36,9 @@ button, input, select { font: inherit; }
 
 .topbar-brand {
   display: flex;
-  width: clamp(210px, 15.4vw, 268px);
+  width: clamp(300px, 24vw, 330px);
   min-height: 50px;
-  flex: 0 0 clamp(210px, 15.4vw, 268px);
+  flex: 0 0 clamp(300px, 24vw, 330px);
   align-items: center;
   gap: 10px;
   border-right: 1px solid var(--line);
@@ -52,15 +52,13 @@ button, input, select { font: inherit; }
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
-  border-radius: 4px;
-  background: var(--blue);
 }
 
-.topbar-brand-mark img { display: block; width: 22px; height: 27px; object-fit: contain; }
-.topbar-brand-copy strong { display: block; color: #111827; font-size: 15px; font-weight: 700; line-height: 1.3; }
+.topbar-brand-mark img { display: block; width: 30px; height: 36px; object-fit: contain; }
+.topbar-brand-copy strong { display: block; color: #111827; font-size: 15px; font-weight: 700; line-height: 1.3; white-space: nowrap; }
 .topbar-brand-copy small { display: block; margin-top: 2px; color: var(--muted); font-size: 9px; }
-.topbar-search-area { display: flex; min-width: 0; flex: 1; align-items: center; padding: 0 24px; }
-.topbar-search { display: flex; width: 100%; min-height: 38px; align-items: center; gap: 6px; border: 1px solid #d2d9e8; border-radius: 8px; background: #f5f6ff; padding: 0 10px; color: #53627a; }
+.topbar-search-area { display: flex; min-width: 0; flex: 1; align-items: center; justify-content: flex-end; padding: 0 24px; }
+.topbar-search { display: flex; width: min(420px, 100%); min-height: 38px; align-items: center; gap: 6px; border: 1px solid #d2d9e8; border-radius: 8px; background: #f5f6ff; padding: 0 10px; color: #53627a; }
 .topbar-search > span { font-size: 15px; line-height: 1; }
 .topbar-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 13px; }
 .topbar-search input::placeholder { color: #68758d; opacity: 1; }
@@ -182,7 +180,7 @@ td:first-child input { min-width: 130px; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; clip-path: inset(50%); }
 
 @media (max-width: 900px) {
-  .topbar-brand { width: 210px; flex-basis: 210px; }
+  .topbar-brand { width: 280px; flex-basis: 280px; }
   .topbar-search-area { padding: 0 12px; }
 
   .review-workspace { grid-template-columns: minmax(0, 1fr); }
@@ -192,13 +190,13 @@ td:first-child input { min-width: 130px; }
 
 @media (max-width: 560px) {
   .app-topbar { height: 54px; }
-  .topbar-brand { width: 154px; min-height: 54px; flex-basis: 154px; gap: 7px; padding: 6px 9px; }
+  .topbar-brand { width: 230px; min-height: 54px; flex-basis: 230px; gap: 7px; padding: 6px 9px; }
   .topbar-brand-mark { width: 26px; height: 31px; }
-  .topbar-brand-mark img { width: 19px; height: 23px; }
-  .topbar-brand-copy strong { max-width: 105px; font-size: 11px; }
+  .topbar-brand-mark img { width: 26px; height: 31px; }
+  .topbar-brand-copy strong { font-size: 10px; }
   .topbar-brand-copy small { font-size: 8px; }
   .topbar-search-area { padding: 0 8px; }
-  .topbar-search { min-height: 32px; gap: 5px; padding: 0 7px; }
+  .topbar-search { width: min(220px, 100%); min-height: 32px; gap: 5px; padding: 0 7px; }
   .topbar-search > span { font-size: 13px; }
   .topbar-search input { font-size: 10px; }
 
