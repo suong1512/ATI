@@ -869,13 +869,6 @@ h1 {
   color: #1754e8;
 }
 
-.extraction-warning {
-  margin-top: 9px;
-  color: #9b5d00;
-  font-size: 8px;
-  line-height: 1.5;
-}
-
 .panel-heading {
   display: flex;
   min-height: 34px;
@@ -2281,11 +2274,6 @@ h1 {
 .extraction-totals .extraction-grand-total {
   padding-top: 10px;
   font-size: 15px;
-}
-
-.extraction-warning {
-  margin-top: 12px;
-  font-size: 12px;
 }
 
 .raw-json {

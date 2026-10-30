@@ -18,16 +18,6 @@
       const navLinks = document.querySelectorAll(".nav-link");
       const historyColumnCount = 7;
       const recentHistoryLimit = 3;
-      const hiddenExtractionWarnings = new Set([
-        "invoice.serialNumber",
-        "invoice.sellerTaxId",
-        "invoice.sellerAddress",
-        "invoice.buyerTaxId",
-        "invoice.lineItems",
-        "invoice.subtotal",
-        "invoice.taxRate",
-        "invoice.taxAmount",
-      ]);
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
@@ -222,14 +212,6 @@
         });
 
         extractionContent.replaceChildren(fieldGrid, itemSection, totals);
-        const visibleWarnings = (record.extraction.warnings ?? [])
-          .filter((warning) => !hiddenExtractionWarnings.has(warning.trim()));
-        if (visibleWarnings.length) {
-          const warnings = document.createElement("p");
-          warnings.className = "extraction-warning";
-          warnings.textContent = visibleWarnings.join(" ");
-          extractionContent.append(warnings);
-        }
         extractionSummary.textContent = `${record.source.fileName} · ${record.extraction.model} · độ tin cậy ${(record.extraction.confidence * 100).toFixed(1)}%`;
         extractionJson.textContent = JSON.stringify(record, null, 2);
         extractionResult.hidden = false;
