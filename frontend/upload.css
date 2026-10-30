@@ -558,6 +558,10 @@ h1 {
   display: none;
 }
 
+.alert [hidden] {
+  display: none;
+}
+
 .alert p {
   flex: 1;
   line-height: 1.5;
@@ -567,6 +571,12 @@ h1 {
   border-color: #ffaaa5;
   background: #fff0ef;
   color: #a82d2b;
+}
+
+.alert-success {
+  border-color: #9cdec5;
+  background: #effbf6;
+  color: #087c59;
 }
 
 .alert-error code {

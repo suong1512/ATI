@@ -111,6 +111,7 @@ select { width: min(520px, 60%); min-height: 36px; padding: 0 10px; }
 }
 
 .notice { margin-bottom: 16px; }
+.notice.notice-success { border-color: #9cdec5; background: #effbf6; color: #087c59; }
 .review-workspace[hidden], .empty-state[hidden], .notice[hidden], .form-error[hidden] { display: none; }
 .empty-state { display: grid; justify-items: center; gap: 12px; padding: 50px 20px; text-align: center; }
 .empty-state h2 { font-size: 18px; }

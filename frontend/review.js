@@ -62,8 +62,9 @@
     }
   }
 
-  function showMessage(text) {
+  function showMessage(text, success = false) {
     message.textContent = text;
+    message.classList.toggle("notice-success", success);
     message.hidden = !text;
   }
 
@@ -111,6 +112,7 @@
 
   function renderInvoice(record) {
     currentRecord = record;
+    approveButton.textContent = "Duyệt và lưu hóa đơn";
     const invoice = record.invoice;
     invoiceFields.replaceChildren();
     totalFields.replaceChildren();
@@ -190,8 +192,8 @@
     renderInvoice(record);
   }
 
-  async function loadReviews(selectedId) {
-    showMessage("");
+  async function loadReviews(selectedId, clearMessage = true) {
+    if (clearMessage) showMessage("");
     const response = await fetch(`${apiOrigin}/api/reviews`, { cache: "no-store" });
     const result = await readJsonResponse(response, "/api/reviews");
     if (!response.ok || !result.ok || !Array.isArray(result.data)) {
@@ -246,6 +248,7 @@
     approveButton.textContent = "Đang lưu...";
     formError.hidden = true;
     try {
+      const approvedFileName = currentRecord.source.fileName;
       const response = await fetch(`${apiOrigin}/api/reviews/approve`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -255,7 +258,13 @@
       if (!response.ok || !result.ok) {
         throw new Error(result.error?.message || `Không thể duyệt hóa đơn (HTTP ${response.status}).`);
       }
-      window.top.location.href = `/detail.html?id=${encodeURIComponent(currentRecord.recordId)}`;
+      approveButton.textContent = "Đã duyệt";
+      showMessage(`Đã duyệt hóa đơn "${approvedFileName}" thành công.`, true);
+      try {
+        await loadReviews(undefined, false);
+      } catch (error) {
+        showMessage(`Đã duyệt hóa đơn "${approvedFileName}" thành công, nhưng không thể làm mới hàng đợi: ${error.message}`, true);
+      }
     } catch (error) {
       formError.textContent = error.message || "Không thể duyệt hóa đơn.";
       formError.hidden = false;

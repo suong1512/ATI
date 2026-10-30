@@ -74,6 +74,16 @@
         invoiceHistory.replaceChildren(row);
       }
 
+      function showUploadAlert(message, success = false) {
+        uploadAlertMessage.textContent = message;
+        uploadAlert.classList.toggle("alert-success", success);
+        uploadAlert.classList.toggle("alert-error", !success);
+        uploadAlert.setAttribute("role", success ? "status" : "alert");
+        uploadAlert.querySelector(".alert-symbol").textContent = success ? "✓" : "⊗";
+        uploadAlert.querySelector("[data-open-picker]").hidden = success;
+        uploadAlert.hidden = false;
+      }
+
       function normalizeSearchText(value) {
         return String(value || "")
           .normalize("NFD")
@@ -106,12 +116,11 @@
         openReviewLink.hidden = true;
         if ((!acceptedType && !acceptedExtension) || isEmpty || isTooLarge) {
           incrementInvalidCount();
-          uploadAlertMessage.textContent = isTooLarge
+          showUploadAlert(isTooLarge
             ? `Tệp "${file.name}" vượt quá giới hạn ${maxFileSizeMb}MB. Vui lòng chọn tệp nhỏ hơn.`
             : isEmpty
               ? `Tệp "${file.name}" bị rỗng. Vui lòng chọn một tệp khác.`
-            : `Tệp "${file.name}" không hợp lệ. Vui lòng chọn PDF, JPG hoặc PNG.`;
-          uploadAlert.hidden = false;
+            : `Tệp "${file.name}" không hợp lệ. Vui lòng chọn PDF, JPG hoặc PNG.`);
           fileInput.value = "";
           return;
         }
@@ -349,22 +358,20 @@
             throw new Error(result.error?.message || `Máy chủ trả về lỗi ${response.status}.`);
           }
           renderExtraction(result.data);
-          uploadAlert.hidden = true;
           selectedFile.textContent = `${file.name} · Đã trích xuất, đang chờ duyệt`;
           openReviewLink.href = `/review.html?id=${encodeURIComponent(result.data.recordId)}`;
           openReviewLink.hidden = false;
+          showUploadAlert(`Tải lên tệp "${file.name}" thành công. Hóa đơn đang chờ duyệt.`, true);
           try {
             await loadInvoices();
           } catch (error) {
-            uploadAlertMessage.textContent = `Đã đưa hóa đơn vào hàng đợi duyệt, nhưng không làm mới được lịch sử đã duyệt: ${error.message}`;
-            uploadAlert.hidden = false;
+            showUploadAlert(`Tải lên tệp thành công và đã đưa hóa đơn vào hàng đợi duyệt, nhưng không làm mới được lịch sử đã duyệt: ${error.message}`);
           }
         } catch (error) {
           incrementInvalidCount();
           selectedFile.textContent = `Không thể tải hoặc trích xuất tệp: ${error.message}`;
           selectedFile.classList.add("file-error");
-          uploadAlertMessage.textContent = error.message;
-          uploadAlert.hidden = false;
+          showUploadAlert(error.message);
         } finally {
           setQueue();
           fileInput.value = "";
