@@ -71,9 +71,6 @@ a {
   height: 27px;
   flex: 0 0 auto;
   place-items: center;
-  border-radius: 4px;
-  background: var(--blue);
-  color: #fff !important;
 }
 
 .brand-mark svg {
