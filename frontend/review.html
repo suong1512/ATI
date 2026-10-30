@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fc">
+    <title>Duyệt hóa đơn — Smart Document Processing</title>
+    <link rel="stylesheet" href="./review.css">
+  </head>
+  <body>
+    <main class="review-page">
+      <header class="review-header">
+        <div>
+          <a class="back-link" href="/" target="_top">← Quay lại trang chủ</a>
+          <h1>Review Queue / Hàng đợi duyệt</h1>
+          <p>Đối chiếu tài liệu gốc, chỉnh sửa thông tin nếu cần, rồi duyệt để lưu hóa đơn.</p>
+        </div>
+        <span class="queue-count" id="queue-count">Đang tải...</span>
+      </header>
+
+      <section class="queue-toolbar panel">
+        <label for="review-select">Chọn hóa đơn đang chờ duyệt</label>
+        <select id="review-select" disabled>
+          <option value="">Đang tải hàng đợi...</option>
+        </select>
+        <button class="button button-outline" id="refresh-reviews" type="button">Làm mới</button>
+      </section>
+
+      <p class="notice" id="review-message" role="status" hidden></p>
+      <section class="empty-state panel" id="empty-state" hidden>
+        <h2>Không có hóa đơn chờ duyệt</h2>
+        <p>Sau khi tải lên và trích xuất, hóa đơn sẽ xuất hiện tại đây.</p>
+        <a class="button button-primary" href="/" target="_top">Tải hóa đơn</a>
+      </section>
+
+      <section class="review-workspace" id="review-workspace" hidden>
+        <section class="panel document-panel" aria-label="Tài liệu gốc để đối chiếu">
+          <header class="panel-heading">
+            <div>
+              <h2>Ảnh / tài liệu gốc</h2>
+              <p id="document-name">—</p>
+            </div>
+            <a id="open-document" href="#" target="_blank" rel="noopener noreferrer" hidden>Mở riêng</a>
+          </header>
+          <p class="preview-message" id="preview-message" role="status" hidden></p>
+          <img id="document-image" alt="Ảnh hóa đơn gốc" hidden>
+          <iframe id="document-pdf" title="Hóa đơn gốc dạng PDF" referrerpolicy="no-referrer" hidden></iframe>
+        </section>
+
+        <form class="panel invoice-form" id="invoice-form">
+          <header class="panel-heading form-heading">
+            <div>
+              <h2>Thông tin trích xuất</h2>
+              <p id="extraction-summary">Kiểm tra và chỉnh sửa trước khi duyệt.</p>
+            </div>
+            <span class="review-status">Chờ duyệt</span>
+          </header>
+          <div class="form-content">
+            <section class="form-section">
+              <h3>Thông tin hóa đơn</h3>
+              <div class="field-grid" id="invoice-fields"></div>
+            </section>
+            <section class="form-section">
+              <div class="section-heading">
+                <h3>Hàng hóa / dịch vụ</h3>
+                <button class="button button-small button-outline" id="add-line-item" type="button">+ Thêm dòng</button>
+              </div>
+              <div class="table-scroll">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Tên hàng hóa / dịch vụ</th>
+                      <th>ĐVT</th>
+                      <th>Số lượng</th>
+                      <th>Đơn giá</th>
+                      <th>Thành tiền</th>
+                      <th><span class="visually-hidden">Xóa dòng</span></th>
+                    </tr>
+                  </thead>
+                  <tbody id="line-items"></tbody>
+                </table>
+              </div>
+            </section>
+            <section class="form-section">
+              <h3>Tổng tiền</h3>
+              <div class="field-grid totals-grid" id="total-fields"></div>
+            </section>
+            <p class="form-error" id="form-error" role="alert" hidden></p>
+          </div>
+          <footer class="form-actions">
+            <a class="button button-outline" href="/" target="_top">Để sau</a>
+            <button class="button button-primary" id="approve-button" type="submit" disabled>Duyệt và lưu hóa đơn</button>
+          </footer>
+        </form>
+      </section>
+    </main>
+    <script src="./review.js" defer></script>
+  </body>
+</html>

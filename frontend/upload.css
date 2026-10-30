@@ -783,6 +783,10 @@ h1 {
   display: none;
 }
 
+#open-review[hidden] {
+  display: none;
+}
+
 .extraction-content {
   padding: 10px;
 }

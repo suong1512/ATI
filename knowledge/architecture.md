@@ -1,6 +1,6 @@
 # Architecture
 
-> Describes the **actual implementation** as of 26/10/2026.
+> Describes the **actual implementation** as of 30/10/2026.
 > Everything not yet implemented is explicitly labelled **Planned / not implemented**.
 > Related: `projectOverview.md` (what/why) · `apiDocs.md` (API contract) · `configuration.md` (environment)
 
@@ -13,8 +13,10 @@ ATI_PhAnh_group/
  .devcontainer/                 # DevContainer (Node 20.18.0 bookworm, port 3000)
  app/                           # Next.js App Router (real application)
    ├── api/
-   │   ├── extract/route.ts       # POST  /api/extract   (upload → Gemini JSON → store)
-   │   └── invoices/route.ts      # GET   /api/invoices  (list) + DELETE (reset)
+   │   ├── extract/route.ts       # POST  /api/extract   (upload → extract → pending review)
+   │   ├── reviews/route.ts       # GET   /api/reviews   (pending review queue)
+   │   ├── reviews/approve/route.ts # POST /api/reviews/approve
+   │   └── invoices/route.ts      # GET   /api/invoices  (approved list) + DELETE (reset)
    ├── globals.css                # Plain CSS (no Tailwind)
    ├── layout.tsx                 # Root layout / metadata
    ├── page.tsx                   # Displays the dashboard from /upload.html at /
@@ -23,14 +25,20 @@ ATI_PhAnh_group/
    ├── upload.js/route.ts         # Serves frontend/upload.js at /upload.js
    ├── detail.html/route.ts       # Serves frontend/detail.html at /detail.html
    ├── detail.css/route.ts        # Serves frontend/detail.css at /detail.css
-   └── detail.js/route.ts         # Serves frontend/detail.js at /detail.js
- frontend/                       # Single source for the static dashboard and detail UI
+   ├── detail.js/route.ts         # Serves frontend/detail.js at /detail.js
+   ├── review.html/route.ts       # Serves frontend/review.html at /review.html
+   ├── review.css/route.ts        # Serves frontend/review.css at /review.css
+   └── review.js/route.ts         # Serves frontend/review.js at /review.js
+ frontend/                       # Single source for the dashboard, review and detail UIs
    ├── upload.html
    ├── upload.css
    ├── upload.js
    ├── detail.html
    ├── detail.css
-   └── detail.js
+   ├── detail.js
+   ├── review.html
+   ├── review.css
+   └── review.js
  components/
    ├── UploadBox.tsx              # Submission box: drag&drop + file picker + status pill
    ├── InvoiceResult.tsx          # Invoice card, line items, totals, raw JSON, download
@@ -72,7 +80,7 @@ ATI_PhAnh_group/
 | PDF rendering | PDF.js `^4.10.38` + `@napi-rs/canvas` | Render PDF pages for the local OCR branch; original PDF remains the Vision input |
 | Styling | Plain CSS (`app/globals.css`) | No Tailwind/PostCSS configured on purpose |
 | Lint | ESLint 9 + `eslint-config-next` 15.5.26 | Flat config `eslint.config.mjs`; see known risk in §8 |
-| Storage | MariaDB `Extracted_Invoice` + MongoDB `Extraction_Records` | SQL metadata index and full extraction JSON payload |
+| Storage | MariaDB `Extracted_Invoice` + MongoDB `Extraction_Records` / `Invoice_Documents` | SQL metadata/status index, extraction payload and original upload |
 | Runtime | Node.js `20.18.0` (devcontainer) | Port 3000 |
 | External services | Google Gemini API | Vision branch sends PDFs unchanged and preprocessed images; requires server-side API key |
 
@@ -84,7 +92,8 @@ ATI_PhAnh_group/
 | --- | --- | --- |
 | Home page | `app/page.tsx` | Displays the full-screen dashboard |
 | Dashboard | `frontend/upload.html` + `frontend/upload.css` + `frontend/upload.js` | Upload UI, statistics and history; calls same-origin API routes |
-| Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Fetches selected record and original PDF/image using its `recordId` |
+| Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Shows information for an approved invoice; no original preview |
+| Manual review | `frontend/review.html` + `frontend/review.css` + `frontend/review.js` | Shows original document and editable extracted fields side by side; approves invoice |
 | Legacy React components | `components/` | Alternative upload, result and history components; dashboard at `/` uses the static frontend |
 | Upload rules | `lib/uploadConfig.ts` | Accepted types/extensions, 10 MB limit, `validateUploadFile()` used by the browser |
 | Schema | `lib/invoiceSchema.ts` | Zod schemas + TypeScript types for `ExtractionResult` |
@@ -93,10 +102,11 @@ ATI_PhAnh_group/
 | Dual-branch extraction | `lib/geminiExtractor.ts` | Runs local OCR and one or more configured Gemini Vision models concurrently; stores OCR evidence and all model outputs |
 | Document metadata | `lib/mockExtractor.ts` | Magic-byte kind detection and PDF page estimate |
 | Database connections | `lib/database.ts` | Shared MariaDB pool and MongoDB connection from server-side environment variables |
-| Invoice store | `lib/invoiceStore.ts` | `listInvoices` / `saveInvoice` / `getInvoiceDocument` / `clearInvoices` across MariaDB and MongoDB |
-| API: extract | `app/api/extract/route.ts` | Validates the upload, runs the extractor, validates with Zod, stores, returns JSON |
-| API: invoices | `app/api/invoices/route.ts` | Lists stored invoices / resets invoice records in both databases |
-| API: original document | `app/api/invoices/[recordId]/document/route.ts` | Returns a saved original PDF/image for the detail-page preview |
+| Invoice store | `lib/invoiceStore.ts` | Saves pending records, lists pending/approved records, approves reviewed values, retrieves originals and clears records |
+| API: extract | `app/api/extract/route.ts` | Validates the upload, runs the extractor, validates with Zod, saves as pending and returns JSON |
+| API: reviews | `app/api/reviews/route.ts` and `app/api/reviews/approve/route.ts` | Lists pending records and persists edits/approval |
+| API: invoices | `app/api/invoices/route.ts` | Lists approved invoices / resets pending and approved records |
+| API: original document | `app/api/invoices/[recordId]/document/route.ts` | Returns a saved original PDF/image for manual review |
 
 ---
 
@@ -115,12 +125,16 @@ flowchart TD
     O --> G["extractionResultSchema.safeParse()\nvalidate invoice and branch evidence"]
     V --> G
     G -->|invalid or incomplete| H["422 extraction error"]
-    G -->|valid| I["invoiceStore.saveInvoice()"]
-    I --> J[("MariaDB\nExtracted_Invoice index")]
-    I --> K[("MongoDB\nExtraction_Records payload")]
+    G -->|valid| I["invoiceStore.saveInvoice(status=pending)"]
+    I --> J[("MariaDB\nExtracted_Invoice + review_status")]
+    I --> K[("MongoDB\nExtraction_Records + original")]
     I --> K["200 OK { ok, data, meta }"]
-    K --> L["Dashboard updates history and statistics"]
-    L --> M["GET /api/invoices"]
+    K --> L["Dashboard links to manual review"]
+    L --> Q["GET /api/reviews"]
+    Q --> R["Review image/PDF beside editable invoice fields"]
+    R --> S["POST /api/reviews/approve"]
+    S --> T["Update reviewed fields; status=approved"]
+    T --> U["GET /api/invoices returns approved only"]
 ```
 
 ### Sequence (upload → JSON → database)
@@ -128,7 +142,8 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     participant U as User
-    participant P as page.tsx
+    participant P as Dashboard
+    participant Q as Review page
     participant R as /api/extract
     participant S as Sharp preprocessing
     participant O as Local Tesseract OCR
@@ -153,10 +168,15 @@ sequenceDiagram
     end
     R->>Z: validate invoice + OCR and Vision branch results
     Z-->>R: valid
-    R->>M: save invoice metadata
-    R->>D: save full extraction payload
+    R->>M: save metadata with status=pending
+    R->>D: save extraction payload + original
     R-->>P: 200 { ok: true, data }
-    P->>U: invoice card + raw JSON
+    P->>Q: open /review.html
+    Q->>M: GET /api/reviews
+    Q->>Q: show original beside editable invoice fields
+    Q->>M: POST /api/reviews/approve
+    M-->>Q: status=approved
+    P->>M: GET /api/invoices (approved only)
 ```
 
 ---
@@ -165,9 +185,11 @@ sequenceDiagram
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `POST` | `/api/extract` | Upload a PDF/PNG/JPEG, return + store the extraction result |
-| `GET` | `/api/invoices` | List stored invoices |
-| `DELETE` | `/api/invoices` | Delete stored invoice records from MariaDB and MongoDB (demo helper) |
+| `POST` | `/api/extract` | Upload a PDF/PNG/JPEG and save extraction as pending |
+| `GET` | `/api/reviews` | List pending extracted invoices |
+| `POST` | `/api/reviews/approve` | Save reviewed invoice fields and approve a pending record |
+| `GET` | `/api/invoices` | List approved invoices |
+| `DELETE` | `/api/invoices` | Delete pending and approved invoice records (demo helper) |
 
 Details, payloads and error codes: `knowledge/apiDocs.md`.
 
@@ -227,8 +249,9 @@ create .env.local with GEMINI_API_KEY
 npm run dev
 open http://localhost:3000
 select a readable PDF / JPG / PNG
-Gemini extracts invoice fields and saves the record
-dashboard statistics and history display the result
+Gemini extracts invoice fields and queues the record for manual review
+compare/correct values and approve the invoice
+dashboard history and information-only detail show approved records
 ```
 
 Manual test steps with expected results: `features.md`.

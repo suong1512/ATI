@@ -16,7 +16,7 @@ function jsonError(status: number, code: string, message: string, details: strin
 /**
  * POST /api/extract
  * multipart/form-data with a single field `file` (PDF / PNG / JPEG).
- * Runs local OCR and Gemini Vision branches, validates their combined result, and stores it.
+ * Runs local OCR and Gemini Vision branches, validates their combined result, and stores it pending review.
  */
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();

@@ -15,6 +15,7 @@
       const extractionSummary = document.querySelector("#extraction-summary");
       const extractionJson = document.querySelector("#extraction-json");
       const downloadExtractionButton = document.querySelector("#download-extraction-json");
+      const openReviewLink = document.querySelector("#open-review");
       const invalidCount = document.querySelector("#stat-invalid");
       const navLinks = document.querySelectorAll(".nav-link");
       const historyColumnCount = 7;
@@ -102,6 +103,7 @@
         selectedFile.textContent = "";
         selectedFile.classList.remove("file-error");
         extractionResult.hidden = true;
+        openReviewLink.hidden = true;
         if ((!acceptedType && !acceptedExtension) || isEmpty || isTooLarge) {
           incrementInvalidCount();
           uploadAlertMessage.textContent = isTooLarge
@@ -263,7 +265,7 @@
           ? `${(confidenceValues.reduce((sum, confidence) => sum + confidence, 0) / confidenceValues.length * 100).toFixed(1)}%`
           : "—";
         document.querySelector("#confidence-caption").textContent = confidenceValues.length ? "trung bình" : "";
-        clearHistoryButton.disabled = records.length === 0;
+        clearHistoryButton.disabled = false;
         const query = normalizeSearchText(historySearch.value.trim());
         const visibleRecords = query
           ? records.filter((record) => normalizeSearchText([
@@ -281,7 +283,7 @@
           : `${records.length} hóa đơn`;
         historyDescription.textContent = query
           ? `Kết quả tìm kiếm cho “${historySearch.value.trim()}”.`
-          : "Lịch sử lưu cục bộ, tối đa 50 bản ghi gần nhất.";
+          : "Hóa đơn đã duyệt, tối đa 50 bản ghi gần nhất.";
         invoiceHistory.replaceChildren();
 
         if (!records.length) {
@@ -299,9 +301,9 @@
             record.source?.fileName || "",
             (record.source?.kind || "").toUpperCase(),
             record.invoice?.sellerName || "",
-            formatMoney(record.invoice?.totalAmount || 0),
+            formatMoney(record.invoice?.totalAmount),
             Number.isFinite(record.extraction?.confidence) ? `${(record.extraction.confidence * 100).toFixed(1)}%` : "",
-            "Đã trích xuất",
+            "Đã duyệt",
           ];
           values.forEach((value, index) => {
             const cell = document.createElement("td");
@@ -358,11 +360,13 @@
           }
           renderExtraction(result.data);
           uploadAlert.hidden = true;
-          selectedFile.textContent = `${file.name} · Đã trích xuất và lưu`;
+          selectedFile.textContent = `${file.name} · Đã trích xuất, đang chờ duyệt`;
+          openReviewLink.href = `/review.html?id=${encodeURIComponent(result.data.recordId)}`;
+          openReviewLink.hidden = false;
           try {
             await loadInvoices();
           } catch (error) {
-            uploadAlertMessage.textContent = `Đã trích xuất và lưu, nhưng không làm mới được lịch sử: ${error.message}`;
+            uploadAlertMessage.textContent = `Đã đưa hóa đơn vào hàng đợi duyệt, nhưng không làm mới được lịch sử đã duyệt: ${error.message}`;
             uploadAlert.hidden = false;
           }
         } catch (error) {
@@ -409,7 +413,7 @@
       });
 
       clearHistoryButton.addEventListener("click", async () => {
-        if (!currentRecords.length || !window.confirm("Xóa toàn bộ hóa đơn đã lưu? Thao tác này không thể hoàn tác.")) {
+        if (!window.confirm("Xóa toàn bộ hóa đơn, bao gồm cả hóa đơn đang chờ duyệt? Thao tác này không thể hoàn tác.")) {
           return;
         }
         clearHistoryButton.disabled = true;
@@ -423,6 +427,7 @@
           currentExtraction = null;
           extractionJson.textContent = "";
           selectedFile.textContent = "";
+          openReviewLink.hidden = true;
           historySearch.value = "";
           uploadAlert.hidden = true;
           await loadInvoices();
@@ -430,7 +435,7 @@
           uploadAlertMessage.textContent = `Không thể xóa lịch sử: ${error.message}`;
           uploadAlert.hidden = false;
         } finally {
-          clearHistoryButton.disabled = currentRecords.length === 0;
+          clearHistoryButton.disabled = false;
         }
       });
 

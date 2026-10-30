@@ -1,16 +1,11 @@
       const detailMessage = document.querySelector("#detail-message");
       const detailContent = document.querySelector("#detail-content");
       const downloadButton = document.querySelector("#download-json");
-      const documentPreviewImage = document.querySelector("#document-preview-image");
-      const documentPreviewPdf = document.querySelector("#document-preview-pdf");
-      const documentPreviewMessage = document.querySelector("#document-preview-message");
-      const openOriginalDocument = document.querySelector("#open-original-document");
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
       const apiOrigin = standalonePreviewPorts.includes(location.port) || location.protocol === "file:"
         ? `${location.protocol === "https:" ? "https:" : "http:"}//${location.hostname || "localhost"}:3000`
         : location.origin;
       let currentRecord = null;
-      let documentPreviewUrl = null;
       const missingValue = "Thiếu giá trị";
 
       async function readJsonResponse(response, endpoint) {
@@ -197,43 +192,11 @@
           warnings.hidden = true;
         }
 
-        document.querySelector("#status-badge").textContent = "Đã trích xuất";
+        document.querySelector("#status-badge").textContent = "Đã duyệt";
         detailMessage.hidden = true;
         detailContent.hidden = false;
         downloadButton.disabled = false;
         document.title = `${invoice.invoiceNumber} — Chi tiết hóa đơn | Smart Document Processing`;
-      }
-
-      async function loadDocumentPreview(record) {
-        const documentUrl = `${apiOrigin}/api/invoices/${encodeURIComponent(record.recordId)}/document`;
-        try {
-          const response = await fetch(documentUrl, { cache: "no-store" });
-          if (!response.ok) {
-            const message = response.status === 404
-              ? "Không có tài liệu gốc được lưu cho hóa đơn này."
-              : "Không thể tải tài liệu gốc. Vui lòng thử tải lại trang.";
-            throw new Error(message);
-          }
-
-          documentPreviewUrl = URL.createObjectURL(await response.blob());
-          openOriginalDocument.href = documentPreviewUrl;
-          if (record.source.kind === "pdf") {
-            documentPreviewPdf.src = documentPreviewUrl;
-            documentPreviewPdf.hidden = false;
-          } else {
-            documentPreviewImage.src = documentPreviewUrl;
-            documentPreviewImage.hidden = false;
-            documentPreviewImage.addEventListener("error", () => {
-              documentPreviewImage.hidden = true;
-              documentPreviewMessage.textContent = "Không thể hiển thị ảnh hóa đơn gốc.";
-              documentPreviewMessage.hidden = false;
-            }, { once: true });
-          }
-        } catch (error) {
-          documentPreviewMessage.textContent = error.message || "Không thể tải tài liệu gốc.";
-          documentPreviewMessage.hidden = false;
-          openOriginalDocument.hidden = true;
-        }
       }
 
       async function loadInvoice() {
@@ -258,7 +221,6 @@
             return;
           }
           renderInvoice(currentRecord);
-          await loadDocumentPreview(currentRecord);
         } catch (error) {
           showError(`Không thể tải chi tiết hóa đơn: ${error.message}`);
         }
@@ -273,10 +235,6 @@
         link.download = `${currentRecord.source.fileName.replace(/\.[^.]+$/, "")}.invoice.json`;
         link.click();
         setTimeout(() => URL.revokeObjectURL(url), 0);
-      });
-
-      window.addEventListener("beforeunload", () => {
-        if (documentPreviewUrl) URL.revokeObjectURL(documentPreviewUrl);
       });
 
       loadInvoice();

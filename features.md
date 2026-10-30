@@ -3,7 +3,7 @@
 > User-visible functionality of the project.
 > Status vocabulary: **Working · Partial · Mocked · In-Progress · Blocked**.
 > Architecture: `knowledge/architecture.md` · API details: `knowledge/apiDocs.md`
-> Last updated: 29/10/2026.
+> Last updated: 30/10/2026.
 > `Working` = verified end-to-end at HTTP/data level · `Partial` = verified at API/data level, UI not
 > click-tested in a browser yet · `Mocked` = works, but the data is simulated.
 > Evidence: `state/task_30_09_state.md` §5 and `state/task_26_10_ui_state.md` §5.
@@ -18,7 +18,7 @@
   2. Drag `samples/sample-invoice.pdf` onto the box (or click it and pick the file).
   3. Choose a readable invoice PDF/JPG/PNG; valid files upload automatically.
   4. Drag a `.txt`/`.docx` file into the box to see the client-side rejection message.
-* **Expected result:** PDFs pass through unchanged; PNG/JPEG images are oriented using EXIF, resized only when larger than 2400×3200, flattened on white and temporarily converted to JPEG quality 92. Saved source metadata/hash still describe the original file. Processing status appears, followed by extracted fields and a history row. Missing Gemini configuration shows an explicit error; unreadable images return `DOCUMENT_PREPROCESSING_FAILED`.
+* **Expected result:** PDFs pass through unchanged; PNG/JPEG images are oriented using EXIF, resized only when larger than 2400×3200, flattened on white and temporarily converted to JPEG quality 92. Saved source metadata/hash still describe the original file. Processing status appears, followed by extracted fields and a pending-review link. The invoice is not listed as saved until approved. Missing Gemini configuration shows an explicit error; unreadable images return `DOCUMENT_PREPROCESSING_FAILED`.
 * **Status:** Partial — preprocessing is implemented; live Gemini upload requires a configured key.
 
 ## F-02 — Structured invoice data (Gemini extraction)
@@ -40,20 +40,21 @@
 
 ## F-03 — Invoice details page
 
-* **Description:** Selecting an invoice in the history opens `detail.html?id=<recordId>`, with a side-by-side layout on wide screens: the saved original image/PDF on one half and extracted invoice information on the other. The layout stacks on narrow screens. A link opens the original document separately.
-* **How to test:** upload an image or PDF after configuring Gemini, open it using *Xem chi tiết*, and compare the preview with the extracted values.
-* **Expected result:** the selected invoice and its original document are shown; older records without a stored original display a clear notice.
-* **Status:** Partial — save/retrieve and preview code is implemented; end-to-end preview still needs verification with a configured database and a new upload.
+* **Description:** `detail.html?id=<recordId>` shows the information for an approved invoice, including parties, amounts and line items. The original image/PDF is shown only in the manual review page.
+* **How to test:** open an approved invoice using *Xem chi tiết* from the saved list.
+* **Expected result:** the approved invoice details and JSON download are shown without the original image/PDF.
+* **Status:** Partial — approved invoice details are loaded from the API; browser checks still require configured databases and an approved record.
 
 ## F-04 — Stored invoices (MariaDB + MongoDB) + reset
 
-* **Description:** Every successful extraction stores invoice metadata in MariaDB and the complete extraction payload in MongoDB. The newest 50 records are listed in *Hóa đơn đã lưu*. The dashboard can search by filename, invoice number, seller/buyer or tax ID; *Làm mới* reloads the list; *Xóa tất cả* calls `DELETE /api/invoices` after confirmation.
+* **Description:** Extraction stores the pending invoice and original document in MongoDB and an index row in MariaDB. Only after manual approval is the invoice listed in *Hóa đơn đã lưu*. The newest 50 approved records are listed; the dashboard supports search, refresh and confirmed reset.
 * **How to test:**
-  1. `curl -s http://localhost:3000/api/invoices` → `{"ok":true,"count":N,"data":[...]}`
-  2. Verify metadata in MariaDB's `Extracted_Invoice` table and the matching payload in MongoDB's `Extraction_Records` collection.
-  3. Use *Xóa tất cả* in the dashboard and confirm, or run `curl -X DELETE http://localhost:3000/api/invoices` → `{"ok":true,"deleted":N}`.
+  1. `GET /api/reviews` returns invoices waiting for approval; `GET /api/invoices` returns approved invoices only.
+  2. Approve an invoice from `/review.html`; it then appears in the saved list and opens in the information-only detail page.
+  3. Verify status and payload in MariaDB's `Extracted_Invoice` and MongoDB's `Extraction_Records`.
+  4. Use *Xóa tất cả* in the dashboard and confirm, or run `DELETE /api/invoices`.
 * **Expected result:** records persist across reloads and can be reset for a demo.
-* **Status:** Partial — the API and dashboard list/search/reset controls use MariaDB + MongoDB; browser checks are recorded in `state/task_26_10_ui_state.md`.
+* **Status:** Partial — the API and dashboard list/search/reset controls use MariaDB + MongoDB; the review workflow is implemented but needs end-to-end database/browser verification.
 
 ## F-05 — Sample invoice file for testing
 
@@ -64,17 +65,17 @@
 
 ## F-06 — Document upload dashboard
 
-* **Description:** The home page at `/` displays the Vietnamese dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. The dashboard reads history from `GET /api/invoices`, supports history search, refresh and confirmed reset, uploads selected PDF/JPG/PNG files to `POST /api/extract`, shows extracted fields and raw JSON, and provides JSON download. History links open the matching invoice detail page.
-* **How to test:** Run `npm run dev` and open <http://localhost:3000/>. Search the existing history, open a record's details, and try refresh/reset (reset asks for confirmation). For upload, choose a readable PDF/JPG/PNG; a live extraction requires `GEMINI_API_KEY`. If opening the frontend through a standalone preview on ports 4173, 5173, 5500 or 5501, the frontend sends API requests to the Next.js server on port 3000.
-* **Expected result:** dashboard history and counts reflect API data; search filters by invoice/file/party fields; upload feedback is explicit; successful results show structured data and JSON download; detail links show the selected record.
+* **Description:** The home page at `/` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. Uploading sends a file to `POST /api/extract`, which places the extraction into the review queue. The dashboard lists only approved invoices; approved detail links show invoice information without the original document.
+* **How to test:** Run `npm run dev`, upload a readable PDF/JPG/PNG (requires `GEMINI_API_KEY`), select *Kiểm tra & duyệt*, edit if needed, then approve. If using a standalone preview port, API requests target port 3000.
+* **Expected result:** an extracted invoice remains out of saved history until it is approved; after approval it appears in the history and its detail page contains information only.
 * **Status:** Partial — dashboard, search, history and detail navigation are implemented; live upload requires a Gemini API key.
 
-## F-08 — Review Queue sidebar navigation
+## F-08 — Manual invoice review and approval
 
-* **Description:** The sidebar includes a *Review Queue / Hàng đợi duyệt* shortcut to saved invoices so users can open and inspect extracted details.
-* **How to test:** Open the home page and select *Review Queue / Hàng đợi duyệt*; the saved-invoice list is brought into view and the selected sidebar item is highlighted.
-* **Expected result:** users can navigate directly to extracted invoices to review them. Approval statuses and actions are not implemented.
-* **Status:** Partial — navigation is implemented; there is no separate persisted approval workflow.
+* **Description:** Extracted invoices are stored with `pending` status and appear at `/review.html`. The page places the original PDF/image beside editable extracted fields and line items. Approving saves the reviewed values and changes the status to `approved`; only approved invoices appear in saved history.
+* **How to test:** Upload a document, open *Review Queue / Hàng đợi duyệt*, compare the original document with extracted data, optionally edit fields, and choose *Duyệt và lưu hóa đơn*. Confirm the invoice now appears under *Hóa đơn đã lưu* and that its detail page contains no preview image.
+* **Expected result:** pending records remain out of `GET /api/invoices`; approved records are returned there and removed from `GET /api/reviews`.
+* **Status:** Partial — workflow implementation is in place; end-to-end confirmation depends on a running database and Gemini configuration.
 
 ---
 

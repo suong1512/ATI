@@ -1,6 +1,10 @@
-import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import type { PoolConnection, ResultSetHeader, RowDataPacket } from "mysql2/promise";
 import { connectMongoDatabase, getMysqlPool } from "./database";
-import { extractionResultSchema, type ExtractionResult } from "./invoiceSchema";
+import {
+  extractionResultSchema,
+  type ExtractionResult,
+  type Invoice,
+} from "./invoiceSchema";
 
 const MONGO_COLLECTION = "Extraction_Records";
 const MAX_RECORDS = 50;
@@ -9,6 +13,10 @@ let schemaInitialization: Promise<void> | undefined;
 
 type InvoiceIndexRow = RowDataPacket & {
   record_id: string;
+};
+
+type ReviewStatusRow = RowDataPacket & {
+  review_status: "pending" | "approved";
 };
 
 type StoredInvoiceDocument = {
@@ -39,13 +47,30 @@ async function getStorage() {
           file_size BIGINT UNSIGNED NOT NULL,
           document_kind ENUM('pdf', 'png', 'jpeg') NOT NULL,
           content_hash CHAR(16) NOT NULL,
+          review_status ENUM('pending', 'approved') NOT NULL DEFAULT 'approved',
           invoice_number VARCHAR(255) NOT NULL,
           seller_name VARCHAR(500) NOT NULL,
           total_amount DECIMAL(20, 2) NOT NULL,
-          INDEX idx_extracted_invoice_created_at (created_at)
+          INDEX idx_extracted_invoice_created_at (created_at),
+          INDEX idx_extracted_invoice_review_status (review_status)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
       `)
-      .then(() => undefined)
+      .then(async () => {
+        const [columns] = await pool.execute<RowDataPacket[]>(
+          `SELECT COLUMN_NAME
+           FROM information_schema.COLUMNS
+           WHERE TABLE_SCHEMA = DATABASE()
+             AND TABLE_NAME = 'Extracted_Invoice'
+             AND COLUMN_NAME = 'review_status'`,
+        );
+        if (columns.length === 0) {
+          await pool.query(`
+            ALTER TABLE Extracted_Invoice
+              ADD COLUMN review_status ENUM('pending', 'approved') NOT NULL DEFAULT 'approved',
+              ADD INDEX idx_extracted_invoice_review_status (review_status)
+          `);
+        }
+      })
       .catch((error: unknown) => {
         schemaInitialization = undefined;
         throw error;
@@ -60,15 +85,18 @@ async function getStorage() {
   };
 }
 
-export async function listInvoices(): Promise<ExtractionResult[]> {
+async function listInvoicesByStatus(
+  status: "pending" | "approved",
+): Promise<ExtractionResult[]> {
   try {
     const { pool, collection } = await getStorage();
     const [rows] = await pool.execute<InvoiceIndexRow[]>(
       `SELECT record_id
        FROM Extracted_Invoice
+       WHERE review_status = ?
        ORDER BY created_at DESC, record_id DESC
        LIMIT ?`,
-      [MAX_RECORDS],
+      [status, MAX_RECORDS],
     );
     const recordIds = rows.map((row) => row.record_id);
     if (recordIds.length === 0) {
@@ -97,6 +125,14 @@ export async function listInvoices(): Promise<ExtractionResult[]> {
   }
 }
 
+export function listInvoices(): Promise<ExtractionResult[]> {
+  return listInvoicesByStatus("approved");
+}
+
+export function listPendingReviews(): Promise<ExtractionResult[]> {
+  return listInvoicesByStatus("pending");
+}
+
 export async function saveInvoice(
   record: ExtractionResult,
   originalDocument: Buffer,
@@ -120,8 +156,8 @@ export async function saveInvoice(
       await pool.execute(
         `INSERT INTO Extracted_Invoice
           (record_id, created_at, file_name, mime_type, file_size, document_kind,
-           content_hash, invoice_number, seller_name, total_amount)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           content_hash, review_status, invoice_number, seller_name, total_amount)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?)`,
         [
           record.recordId,
           new Date(record.createdAt),
@@ -151,6 +187,69 @@ export async function saveInvoice(
     return record;
   } catch (error) {
     throw new InvoiceStoreError("Unable to save invoice to the database.", { cause: error });
+  }
+}
+
+export async function approveInvoice(
+  recordId: string,
+  invoice: Invoice,
+): Promise<"approved" | "not-found" | "not-pending"> {
+  let connection: PoolConnection | undefined;
+  let transactionStarted = false;
+  try {
+    const { pool, collection } = await getStorage();
+    connection = await pool.getConnection();
+    await connection.beginTransaction();
+    transactionStarted = true;
+    const [rows] = await connection.execute<ReviewStatusRow[]>(
+      `SELECT review_status
+       FROM Extracted_Invoice
+       WHERE record_id = ?
+       FOR UPDATE`,
+      [recordId],
+    );
+    if (!rows.length) {
+      await connection.rollback();
+      transactionStarted = false;
+      return "not-found";
+    }
+    if (rows[0].review_status !== "pending") {
+      await connection.rollback();
+      transactionStarted = false;
+      return "not-pending";
+    }
+
+    const updateResult = await collection.updateOne(
+      { _id: recordId },
+      { $set: { invoice } },
+    );
+    if (updateResult.matchedCount !== 1) {
+      throw new Error(`MongoDB payload is missing for invoice ${recordId}.`);
+    }
+    await connection.execute(
+      `UPDATE Extracted_Invoice
+       SET review_status = 'approved',
+           invoice_number = ?,
+           seller_name = ?,
+           total_amount = ?
+       WHERE record_id = ?`,
+      [
+        invoice.invoiceNumber ?? "",
+        invoice.sellerName ?? "",
+        invoice.totalAmount ?? 0,
+        recordId,
+      ],
+    );
+    await connection.commit();
+    transactionStarted = false;
+    return "approved";
+  } catch (error) {
+    if (transactionStarted && connection) {
+      await connection.rollback();
+    }
+    throw new InvoiceStoreError("Unable to approve invoice in the database.", { cause: error });
+  } finally {
+    connection?.release();
   }
 }
 

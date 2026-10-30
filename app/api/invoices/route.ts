@@ -4,7 +4,7 @@ import { handleLocalFrontendOptions, withLocalFrontendCors } from "@/lib/localFr
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-/** GET /api/invoices — list invoices stored in MariaDB and MongoDB. */
+/** GET /api/invoices — list approved invoices from MariaDB and MongoDB. */
 export async function GET(request: Request) {
   try {
     const invoices = await listInvoices();
@@ -24,7 +24,7 @@ export async function GET(request: Request) {
   }
 }
 
-/** DELETE /api/invoices — remove the stored invoices (useful for demos). */
+/** DELETE /api/invoices — remove pending and approved invoices (useful for demos). */
 export async function DELETE(request: Request) {
   try {
     const deleted = await clearInvoices();

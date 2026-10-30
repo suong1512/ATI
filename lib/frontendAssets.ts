@@ -8,6 +8,9 @@ const frontendAssets = {
   "detail.html": "text/html; charset=utf-8",
   "detail.css": "text/css; charset=utf-8",
   "detail.js": "text/javascript; charset=utf-8",
+  "review.html": "text/html; charset=utf-8",
+  "review.css": "text/css; charset=utf-8",
+  "review.js": "text/javascript; charset=utf-8",
 } as const;
 
 type FrontendAsset = keyof typeof frontendAssets;

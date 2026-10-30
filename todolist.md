@@ -1,6 +1,27 @@
 # Todolist
 
-Last updated: 29/10/2026 · Active task: **TASK-NULLABLE-INVOICE-FIELDS-28-10**
+Last updated: 30/10/2026 · Active task: **TASK-MANUAL-INVOICE-REVIEW-30-10**
+
+## TASK-MANUAL-INVOICE-REVIEW-30-10 — Add manual invoice approval
+
+- [x] Store newly extracted records in a persisted pending-review state.
+- [x] Add a review page with a side-by-side original document and editable invoice information.
+- [x] Approve reviewed values before including invoices in saved history.
+- [x] Remove the original-document preview from the approved invoice detail page.
+- [x] Update the frontend navigation and project/API documentation.
+- [x] Run frontend syntax checks, changed-file lint, typecheck, production build and focused route checks.
+- [x] Verify pending-to-approved persistence with local MariaDB/MongoDB services and a temporary record.
+
+### Validation
+
+- [x] `node --check frontend/review.js`, `frontend/upload.js`, and `frontend/detail.js`
+- [x] ESLint on all changed TypeScript/JavaScript files
+- [x] `npm run typecheck`
+- [x] `npm run build`
+- [x] Production route smoke checks for review, upload and detail assets; invalid approval request returns HTTP 400.
+- [x] Database workflow: pending record is excluded from saved invoices; approval persists edited fields and moves it to saved invoices.
+- [x] Browser check: review page shows the original beside editable fields; approval opens an information-only detail page.
+- [ ] Full `npm run lint` remains blocked by unrelated `require()` lint errors in `smart-doc-db/db.js` and `smart-doc-db/test_connection.js`.
 
 ## TASK-API-PREVIEW-PORT-29-10 — Route preview API requests to Next.js
 

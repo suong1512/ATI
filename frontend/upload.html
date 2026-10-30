@@ -42,7 +42,7 @@
             </svg>
             Trạng thái xử lý
           </a>
-          <a class="nav-link" href="#review-queue">
+          <a class="nav-link" href="/review.html" target="_top">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M5 4.75h10l4 4v10.5H5z"/>
               <path d="M15 4.75v4h4M8 13h3M8 16h3"/>
@@ -62,7 +62,7 @@
         </nav>
 
         <div class="sidebar-bottom">
-          <p class="sidebar-note">Bản thử nghiệm<br>Hóa đơn lưu trong tệp JSON cục bộ.</p>
+          <p class="sidebar-note">Bản thử nghiệm<br>Hóa đơn lưu trong database.</p>
         </div>
       </aside>
 
@@ -87,7 +87,7 @@
           <section class="stats-grid" aria-label="Thống kê hôm nay">
             <article class="stat-card">
               <div>
-                <span class="stat-label">Đã trích xuất hôm nay</span>
+                <span class="stat-label">Đã duyệt hôm nay</span>
                 <strong><span id="stat-today">0</span> <small>tài liệu</small></strong>
               </div>
               <span class="stat-icon stat-success" aria-hidden="true">
@@ -210,7 +210,10 @@
                 <h2>Kết quả trích xuất</h2>
                 <p id="extraction-summary"></p>
               </div>
-              <button class="button button-outline" id="download-extraction-json" type="button">Tải JSON</button>
+              <div class="history-actions">
+                <a class="button button-outline" id="open-review" href="/review.html" target="_top" hidden>Kiểm tra &amp; duyệt</a>
+                <button class="button button-outline" id="download-extraction-json" type="button">Tải JSON</button>
+              </div>
             </header>
             <div class="extraction-content" id="extraction-content"></div>
             <details class="raw-json">
@@ -223,7 +226,7 @@
             <header class="panel-heading recent-heading" id="review-queue">
               <div>
                 <h2>Hóa đơn đã lưu</h2>
-                <p>Chọn hóa đơn để kiểm tra thông tin trích xuất.</p>
+                <p>Chỉ hóa đơn đã được duyệt mới xuất hiện trong danh sách này.</p>
                 <p id="history-description">Lịch sử lưu cục bộ, tối đa 50 bản ghi gần nhất</p>
               </div>
               <div class="history-actions">

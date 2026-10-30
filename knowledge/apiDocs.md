@@ -3,7 +3,7 @@
 > Internal API exposed by the Next.js App Router (`app/api/**`).
 > `POST /api/extract` runs local OCR and sends prepared documents to Google's Gemini API; Vision requires `GEMINI_API_KEY`.
 > Response contract source of truth: `lib/invoiceSchema.ts`.
-> Last updated: 28/10/2026
+> Last updated: 30/10/2026
 
 ---
 
@@ -19,8 +19,9 @@
 | Caching | `dynamic = "force-dynamic"` on both routes |
 | Error message language | Vietnamese |
 
-> **Verification status:** every endpoint and error code below was executed with `curl` against the
-> dev server on 30/09/2026 (results in `state/task_30_09_state.md` §5).
+> **Verification:** the original upload/history endpoints were exercised on 30/09/2026; the review
+> approval transition was verified on 30/10/2026 with a temporary local database record. See
+> `todolist.md` under `TASK-MANUAL-INVOICE-REVIEW-30-10`.
 
 ### Response envelope
 
@@ -40,7 +41,7 @@ Error:
 
 ## 2. `POST /api/extract`
 
-Upload one invoice document; the server prepares the input, runs OCR and configured Gemini Vision model(s) concurrently, validates the combined extraction result, then stores its metadata in MariaDB and full payload in MongoDB.
+Upload one invoice document; the server prepares the input, runs OCR and configured Gemini Vision model(s) concurrently, validates the combined extraction result, then stores it as `pending` in MariaDB and MongoDB. It does not appear in saved invoice history until approved.
 
 ### Request
 
@@ -178,9 +179,39 @@ curl -i -X POST http://localhost:3000/api/extract
 
 ---
 
-## 3. `GET /api/invoices`
+## 3. `GET /api/reviews`
 
-Lists the newest 50 invoices indexed in MariaDB and loads their full payloads from MongoDB.
+Lists up to 50 newest invoices whose MariaDB `review_status` is `pending`, including extraction payloads from MongoDB. The original document can be loaded for side-by-side comparison from the document endpoint.
+
+```bash
+curl -s http://localhost:3000/api/reviews
+# { "ok": true, "count": 1, "data": [ /* ExtractionResult[] */ ] }
+```
+
+## 4. `POST /api/reviews/approve`
+
+Save manually reviewed invoice fields and transition a pending record to `approved`. The `invoice` object must satisfy the shared invoice schema. The saved history endpoint will then include it.
+
+### Request
+
+```json
+{
+  "recordId": "inv_a1b2c3d4e5f60718_m9k2x1",
+  "invoice": { "...": "complete invoice object from lib/invoiceSchema.ts" }
+}
+```
+
+### Success response
+
+```json
+{ "ok": true, "recordId": "inv_a1b2c3d4e5f60718_m9k2x1", "status": "approved" }
+```
+
+Invalid JSON or invoice fields return `400`; a missing record returns `404 REVIEW_NOT_FOUND`; a record that is no longer pending returns `409 REVIEW_ALREADY_PROCESSED`; database errors return `503 DATABASE_UNAVAILABLE`.
+
+## 5. `GET /api/invoices`
+
+Lists the newest 50 **approved** invoices indexed in MariaDB and loads their full payloads from MongoDB. Pending reviews are excluded.
 
 ```bash
 curl -s http://localhost:3000/api/invoices
@@ -190,11 +221,12 @@ curl -s http://localhost:3000/api/invoices
 { "ok": true, "count": 1, "data": [ /* ExtractionResult[] */ ] }
 ```
 
-## 4. `GET /api/invoices/:recordId/document`
+## 6. `GET /api/invoices/:recordId/document`
 
 Returns the original uploaded PDF, PNG or JPEG with its detected media type for inline preview.
 The original is stored separately from invoice extraction payloads in MongoDB's `Invoice_Documents`
-collection. Records created before original-document storage was added return HTTP 404.
+collection and is used by the manual review page for comparison. Records created before original-document
+storage was added return HTTP 404.
 
 ```bash
 curl -i http://localhost:3000/api/invoices/<recordId>/document
@@ -202,9 +234,9 @@ curl -i http://localhost:3000/api/invoices/<recordId>/document
 
 ---
 
-## 5. `DELETE /api/invoices`
+## 7. `DELETE /api/invoices`
 
-Deletes invoice records from MariaDB and their payloads from MongoDB. Intended for demos/tests.
+Deletes approved and pending invoice records from MariaDB and their payloads/originals from MongoDB. Intended for demos/tests.
 
 ```bash
 curl -s -X DELETE http://localhost:3000/api/invoices
@@ -213,7 +245,7 @@ curl -s -X DELETE http://localhost:3000/api/invoices
 
 ---
 
-## 6. Response Object Reference (`ExtractionResult`)
+## 8. Response Object Reference (`ExtractionResult`)
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -233,14 +265,16 @@ curl -s -X DELETE http://localhost:3000/api/invoices
 | `extraction.warnings` | string[] | extraction caveats returned by Gemini |
 
 The authoritative field list and constraints: `lib/invoiceSchema.ts`.
+Review state is stored in MariaDB separately from this payload; `pending` records are returned by
+`GET /api/reviews`, and `approved` records by `GET /api/invoices`.
 
 ---
 
-## 6. Limitations and Integration Notes
+## 9. Limitations and Integration Notes
 
 * **No authentication / authorization.** Any client can upload, read and delete stored records.
-* **No rate limiting** and no file persistence of the uploaded document itself (only the extracted JSON is stored).
-* Database connections require `MYSQL_*` and `MONGODB_URI` variables in `.env.local`; the invoice index table is created automatically when the API first connects.
+* **No rate limiting.** Uploaded originals are stored in MongoDB `Invoice_Documents` for review comparison.
+* Database connections require `MYSQL_*` and `MONGODB_URI` variables in `.env.local`; the invoice index table and `review_status` column are created/migrated automatically when the API first connects. Existing index rows are treated as approved; new extraction rows start pending.
 * A database outage returns `503 DATABASE_UNAVAILABLE`; records are not silently replaced with mock or empty data.
 * Uploaded invoice files are transmitted to Google's Gemini API. Review privacy, terms, quota and pricing before sending real invoices.
 
