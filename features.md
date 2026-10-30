@@ -80,7 +80,7 @@
 ## F-08 — Manual invoice review and approval
 
 * **Description:** Extracted invoices are stored with `pending` status and appear at `/review.html`. The page places the original PDF/image beside editable extracted fields and line items. Approving saves the reviewed values and changes the status to `approved`; only approved invoices appear in saved history.
-* **How to test:** Upload a document, open *Review Queue / Hàng đợi duyệt*, compare the original document with extracted data, optionally edit fields, and choose *Duyệt và lưu hóa đơn*. Confirm the invoice now appears under *Hóa đơn đã lưu* and that its detail page contains no preview image.
+* **How to test:** Upload a document, open *Hàng đợi duyệt*, compare the original document with extracted data, optionally edit fields, and choose *Duyệt và lưu hóa đơn*. Confirm the invoice now appears under *Hóa đơn đã lưu* and that its detail page contains no preview image.
 * **Expected result:** pending records remain out of `GET /api/invoices`; approved records are returned there and removed from `GET /api/reviews`.
 * **Status:** Partial — workflow implementation is in place; end-to-end confirmation depends on a running database and Gemini configuration.
 

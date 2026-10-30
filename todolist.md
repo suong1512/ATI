@@ -50,7 +50,7 @@ Last updated: 30/10/2026 · Active task: **TASK-FULL-INVOICE-HISTORY-30-10**
 
 ## TASK-REVIEW-QUEUE-NAV-28-10 — Review Queue sidebar navigation
 
-- [x] Add a bilingual Review Queue item to the sidebar.
+- [x] Add a Hàng đợi duyệt item to the sidebar.
 - [x] Link it to the saved-invoice review list and highlight the selected navigation item.
 - [x] Document that approval states/actions are not yet part of the application.
 - [x] Run frontend syntax, lint, typecheck and production build checks.
