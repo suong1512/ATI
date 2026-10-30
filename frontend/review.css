@@ -46,9 +46,10 @@ button, input, select { font: inherit; }
 .search-box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
 
 .review-page {
-  width: min(1800px, calc(100% - 120px));
+  width: 100%;
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 22px 0;
+  padding: 18px clamp(18px, 2.4vw, 36px) 32px;
 }
 
 .review-header, .queue-toolbar, .panel-heading, .section-heading, .form-actions {
@@ -183,10 +184,10 @@ td:first-child input { min-width: 130px; }
   .main-content { margin-left: 0; }
   .topbar { min-height: 54px; padding: 8px 12px; }
   .search-box { width: 100%; }
+  .review-page { padding: 14px 12px 24px; }
 }
 
 @media (max-width: 560px) {
-  .review-page { width: calc(100% - 48px); padding-top: 14px; }
   .review-header { align-items: flex-start; }
   .review-header p { max-width: 30ch; line-height: 1.5; }
   .queue-toolbar { flex-wrap: wrap; }
