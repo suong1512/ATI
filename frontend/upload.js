@@ -7,9 +7,7 @@
       const queueCount = document.querySelector("#queue-count");
       const invoiceHistory = document.querySelector("#invoice-history");
       const historySearch = document.querySelector("#history-search");
-      const historyCount = document.querySelector("#history-count");
       const historyDescription = document.querySelector("#history-description");
-      const clearHistoryButton = document.querySelector("#clear-history");
       const extractionResult = document.querySelector("#extraction-result");
       const extractionContent = document.querySelector("#extraction-content");
       const extractionSummary = document.querySelector("#extraction-summary");
@@ -19,7 +17,7 @@
       const invalidCount = document.querySelector("#stat-invalid");
       const navLinks = document.querySelectorAll(".nav-link");
       const historyColumnCount = 7;
-      const recentHistoryLimit = 5;
+      const recentHistoryLimit = 3;
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
@@ -266,7 +264,6 @@
           ? `${(confidenceValues.reduce((sum, confidence) => sum + confidence, 0) / confidenceValues.length * 100).toFixed(1)}%`
           : "—";
         document.querySelector("#confidence-caption").textContent = confidenceValues.length ? "trung bình" : "";
-        clearHistoryButton.disabled = false;
         const query = normalizeSearchText(historySearch.value.trim());
         const visibleRecords = query
           ? records.filter((record) => normalizeSearchText([
@@ -279,11 +276,8 @@
             record.invoice?.buyerTaxId,
           ].join(" ")).includes(query))
           : records;
-        historyCount.textContent = query
-          ? `${visibleRecords.length} / ${records.length} hóa đơn`
-          : `${records.length} hóa đơn`;
         historyDescription.textContent = query
-          ? `Kết quả trong ${records.length} hóa đơn mới nhất cho “${historySearch.value.trim()}”.`
+          ? `Kết quả trong ${records.length} hóa đơn gần nhất cho “${historySearch.value.trim()}”.`
           : `${records.length} hóa đơn đã duyệt mới nhất.`;
         invoiceHistory.replaceChildren();
 
@@ -403,45 +397,8 @@
       uploadAlert.querySelector(".dismiss-button").addEventListener("click", () => {
         uploadAlert.hidden = true;
       });
-      document.querySelector("#refresh-button").addEventListener("click", async () => {
-        try {
-          await loadInvoices();
-          uploadAlert.hidden = true;
-        } catch (error) {
-          uploadAlertMessage.textContent = `Không thể làm mới lịch sử: ${error.message}`;
-          uploadAlert.hidden = false;
-        }
-      });
-
-      clearHistoryButton.addEventListener("click", async () => {
-        if (!window.confirm("Xóa toàn bộ hóa đơn, bao gồm cả hóa đơn đang chờ duyệt? Thao tác này không thể hoàn tác.")) {
-          return;
-        }
-        clearHistoryButton.disabled = true;
-        try {
-          const response = await fetch(`${apiOrigin}/api/invoices`, { method: "DELETE" });
-          const result = await readJsonResponse(response, "/api/invoices");
-          if (!response.ok || !result.ok) {
-            throw new Error(result.error?.message || `Máy chủ trả về lỗi ${response.status}.`);
-          }
-          extractionResult.hidden = true;
-          currentExtraction = null;
-          extractionJson.textContent = "";
-          selectedFile.textContent = "";
-          openReviewLink.hidden = true;
-          historySearch.value = "";
-          uploadAlert.hidden = true;
-          await loadInvoices();
-        } catch (error) {
-          uploadAlertMessage.textContent = `Không thể xóa lịch sử: ${error.message}`;
-          uploadAlert.hidden = false;
-        } finally {
-          clearHistoryButton.disabled = false;
-        }
-      });
-
       loadInvoices().catch((error) => {
         renderHistoryMessage(
-          `Không thể kết nối máy chủ: ${error.message}. Hãy nhấn Làm mới ở phần lịch sử để thử lại.`,
+          `Không thể kết nối máy chủ: ${error.message}. Hãy tải lại trang để thử lại.`,
         );
       });

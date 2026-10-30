@@ -4,7 +4,7 @@ Last updated: 30/10/2026 · Active task: **TASK-FULL-INVOICE-HISTORY-30-10**
 
 ## TASK-FULL-INVOICE-HISTORY-30-10 — Add full invoice history page
 
-- [x] Limit the upload dashboard to five newest approved invoices and link to full history.
+- [x] Limit the upload dashboard to three newest approved invoices and link to full history.
 - [x] Add a history page with search, filters, pagination and CSV export.
 - [x] Add API support for listing all approved invoices and fetching one approved record.
 - [x] Update feature, API and architecture documentation.

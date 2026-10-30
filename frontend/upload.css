@@ -2341,12 +2341,6 @@ h1 {
   gap: 10px;
 }
 
-.history-count {
-  color: var(--muted);
-  font-size: 12px;
-  white-space: nowrap;
-}
-
 .history-full-link {
   display: inline-flex;
   align-items: center;
@@ -2358,24 +2352,6 @@ h1 {
 
 .history-full-link:hover {
   background: #f3f6ff;
-}
-
-.destructive-button {
-  border: 1px solid #f0c9c6;
-  border-radius: 6px;
-  background: #fff7f6;
-  padding: 6px 9px;
-  color: #a8322c;
-  cursor: pointer;
-}
-
-.destructive-button:hover:not(:disabled) {
-  background: #ffebe9;
-}
-
-.destructive-button:disabled {
-  cursor: not-allowed;
-  opacity: .55;
 }
 
 .table-scroll {
@@ -2534,11 +2510,6 @@ td {
 
   .history-actions {
     gap: 7px;
-  }
-
-  .history-count {
-    width: 100%;
-    text-align: right;
   }
 
   .panel-heading h2, .recent-heading h2 {

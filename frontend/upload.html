@@ -70,7 +70,7 @@
         <header class="topbar">
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
-            <input id="history-search" type="search" placeholder="Tìm trong 5 hóa đơn gần nhất..." aria-label="Tìm hóa đơn trong danh sách gần đây" disabled>
+            <input id="history-search" type="search" placeholder="Tìm trong 3 hóa đơn gần nhất..." aria-label="Tìm hóa đơn trong danh sách gần đây" disabled>
           </label>
           <span class="prototype-label">Bản thử nghiệm · Gemini</span>
         </header>
@@ -227,13 +227,10 @@
               <div>
                 <h2>Hóa đơn đã lưu</h2>
                 <p>Chỉ hóa đơn đã được duyệt mới xuất hiện trong danh sách này.</p>
-                <p id="history-description">5 hóa đơn đã duyệt mới nhất</p>
+                <p id="history-description">3 hóa đơn đã duyệt mới nhất</p>
               </div>
               <div class="history-actions">
-                <span class="history-count" id="history-count">0 hóa đơn</span>
                 <a class="text-button history-full-link" href="/history.html" target="_top">Xem toàn bộ lịch sử</a>
-                <button class="text-button" id="refresh-button" type="button">Làm mới</button>
-                <button class="text-button destructive-button" id="clear-history" type="button" disabled>Xóa tất cả</button>
               </div>
             </header>
             <div class="table-scroll">

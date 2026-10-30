@@ -2,7 +2,7 @@
 
 > **Source of truth for the architecture is `knowledge/architecture.md`.**
 > This file is the short version required by `agents.md` and must stay consistent with it.
-> Last updated: 30/10/2026 — the upload dashboard shows five recent approved invoices and a full searchable history is available.
+> Last updated: 30/10/2026 — the upload dashboard shows up to three recent approved invoices and links to the full searchable history.
 > Validation status: manual approval was verified with a temporary local database record. Live Vision
 > calls still require a configured API key and a real invoice upload.
 
