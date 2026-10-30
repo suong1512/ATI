@@ -65,7 +65,7 @@
 
 ## F-06 — Document upload dashboard
 
-* **Description:** The home page at `/` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. Uploading sends a file to `POST /api/extract`, which places the extraction into the review queue. The extraction result offers a JSON report download without displaying the warning line; warning data remains available in the JSON report. The dashboard lists up to three newest approved invoices and offers only a link to the full `/history.html`; approved detail links show invoice information without the original document.
+* **Description:** The home page at `/` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. Uploading sends a file to `POST /api/extract`, which places the extraction into the review queue. Missing values in the extraction result display as `_`. The result offers a JSON report download without displaying the warning line; warning data remains available in the JSON report. The dashboard lists up to three newest approved invoices and offers only a link to the full `/history.html`; approved detail links show invoice information without the original document.
 * **How to test:** Run `npm run dev`, upload a readable PDF/JPG/PNG (requires `GEMINI_API_KEY`), select *Kiểm tra & duyệt*, edit if needed, then approve. If using a standalone preview port, API requests target port 3000.
 * **Expected result:** an extracted invoice remains out of saved history until it is approved; after approval it appears in the history and its detail page contains information only.
 * **Status:** Partial — dashboard, search, history and detail navigation are implemented; live upload requires a Gemini API key.

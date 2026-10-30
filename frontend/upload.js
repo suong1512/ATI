@@ -18,6 +18,7 @@
       const navLinks = document.querySelectorAll(".nav-link");
       const historyColumnCount = 7;
       const recentHistoryLimit = 3;
+      const missingValue = "_";
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
@@ -120,7 +121,7 @@
       }
 
       function formatMoney(amount) {
-        if (amount === null || amount === undefined) return "Thiếu giá trị";
+        if (amount === null || amount === undefined) return missingValue;
         return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 0 }).format(amount);
       }
 
@@ -146,7 +147,7 @@
           const heading = document.createElement("span");
           heading.textContent = label;
           const content = document.createElement("strong");
-          content.textContent = value === null || value === undefined || value === "" ? "Thiếu giá trị" : String(value);
+          content.textContent = value === null || value === undefined || value === "" ? missingValue : String(value);
           field.append(heading, content);
           fieldGrid.append(field);
         });
@@ -170,9 +171,9 @@
         (invoice.lineItems ?? []).forEach((item) => {
           const row = document.createElement("tr");
           [
-            item.name || "Thiếu giá trị",
-            item.unit || "Thiếu giá trị",
-            item.quantity ?? "Thiếu giá trị",
+            item.name || missingValue,
+            item.unit || missingValue,
+            item.quantity ?? missingValue,
             formatMoney(item.unitPrice),
             formatMoney(item.lineTotal),
           ].forEach((value) => {
@@ -186,7 +187,7 @@
           const row = document.createElement("tr");
           const cell = document.createElement("td");
           cell.colSpan = 5;
-          cell.textContent = invoice.lineItems === null ? "Thiếu danh sách mặt hàng" : "Không có mặt hàng được trích xuất.";
+          cell.textContent = invoice.lineItems === null ? missingValue : "Không có mặt hàng được trích xuất.";
           row.append(cell);
           body.append(row);
         }
@@ -198,7 +199,7 @@
         totals.className = "extraction-totals";
         [
           ["Cộng tiền hàng", formatMoney(invoice.subtotal)],
-          [`Thuế GTGT (${invoice.taxRate === null ? "Thiếu giá trị" : `${(invoice.taxRate * 100).toFixed(1)}%`})`, formatMoney(invoice.taxAmount)],
+          [`Thuế GTGT (${invoice.taxRate === null ? missingValue : `${(invoice.taxRate * 100).toFixed(1)}%`})`, formatMoney(invoice.taxAmount)],
           ["Tổng thanh toán", formatMoney(invoice.totalAmount)],
         ].forEach(([label, value], index) => {
           const row = document.createElement("div");
