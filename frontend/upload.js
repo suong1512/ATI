@@ -19,6 +19,7 @@
       const invalidCount = document.querySelector("#stat-invalid");
       const navLinks = document.querySelectorAll(".nav-link");
       const historyColumnCount = 7;
+      const recentHistoryLimit = 5;
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
@@ -282,8 +283,8 @@
           ? `${visibleRecords.length} / ${records.length} hóa đơn`
           : `${records.length} hóa đơn`;
         historyDescription.textContent = query
-          ? `Kết quả tìm kiếm cho “${historySearch.value.trim()}”.`
-          : "Hóa đơn đã duyệt, tối đa 50 bản ghi gần nhất.";
+          ? `Kết quả trong ${records.length} hóa đơn mới nhất cho “${historySearch.value.trim()}”.`
+          : `${records.length} hóa đơn đã duyệt mới nhất.`;
         invoiceHistory.replaceChildren();
 
         if (!records.length) {
@@ -338,7 +339,7 @@
       }
 
       async function loadInvoices() {
-        const endpoint = `${apiOrigin}/api/invoices`;
+        const endpoint = `${apiOrigin}/api/invoices?limit=${recentHistoryLimit}`;
         const response = await fetch(endpoint, { cache: "no-store" });
         const result = await readJsonResponse(response, "/api/invoices");
         if (!response.ok) {

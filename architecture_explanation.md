@@ -2,13 +2,13 @@
 
 > **Source of truth for the architecture is `knowledge/architecture.md`.**
 > This file is the short version required by `agents.md` and must stay consistent with it.
-> Last updated: 30/10/2026 — extracted invoices enter manual review before they appear in saved history.
+> Last updated: 30/10/2026 — the upload dashboard shows five recent approved invoices and a full searchable history is available.
 > Validation status: manual approval was verified with a temporary local database record. Live Vision
 > calls still require a configured API key and a real invoice upload.
 
 ## 1. System Overview
 
-A single Next.js (App Router) fullstack prototype. The browser renders the upload dashboard and a
+A single Next.js (App Router) fullstack prototype. The browser renders the upload dashboard, a full invoice history page and a
 manual review page. The server validates and extracts uploads with local Tesseract OCR and configured
 Gemini Vision model(s), stores each result as pending, then moves it to approved only after review.
 MariaDB indexes the review status; MongoDB stores the extraction payload and original document.

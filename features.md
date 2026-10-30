@@ -47,14 +47,14 @@
 
 ## F-04 — Stored invoices (MariaDB + MongoDB) + reset
 
-* **Description:** Extraction stores the pending invoice and original document in MongoDB and an index row in MariaDB. Only after manual approval is the invoice listed in *Hóa đơn đã lưu*. The newest 50 approved records are listed; the dashboard supports search, refresh and confirmed reset.
+* **Description:** Extraction stores the pending invoice and original document in MongoDB and an index row in MariaDB. Only after manual approval is the invoice listed in saved history. Upload shows the five newest approved records; `/history.html` loads all approved records and provides search, date/type/confidence filters, pagination and CSV export.
 * **How to test:**
-  1. `GET /api/reviews` returns invoices waiting for approval; `GET /api/invoices` returns approved invoices only.
-  2. Approve an invoice from `/review.html`; it then appears in the saved list and opens in the information-only detail page.
+  1. `GET /api/reviews` returns invoices waiting for approval; `GET /api/invoices?limit=all` returns all approved invoices.
+  2. Approve an invoice from `/review.html`; it appears among the five recent dashboard records and in the full `/history.html` list, and opens in the information-only detail page.
   3. Verify status and payload in MariaDB's `Extracted_Invoice` and MongoDB's `Extraction_Records`.
   4. Use *Xóa tất cả* in the dashboard and confirm, or run `DELETE /api/invoices`.
 * **Expected result:** records persist across reloads and can be reset for a demo.
-* **Status:** Partial — the API and dashboard list/search/reset controls use MariaDB + MongoDB; the review workflow is implemented but needs end-to-end database/browser verification.
+* **Status:** Partial — the API and dashboard/history list controls use MariaDB + MongoDB; the review workflow is implemented but needs end-to-end database/browser verification.
 
 ## F-05 — Sample invoice file for testing
 
@@ -65,10 +65,17 @@
 
 ## F-06 — Document upload dashboard
 
-* **Description:** The home page at `/` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. Uploading sends a file to `POST /api/extract`, which places the extraction into the review queue. The dashboard lists only approved invoices; approved detail links show invoice information without the original document.
+* **Description:** The home page at `/` displays the dashboard from `frontend/upload.html`, `frontend/upload.css` and `frontend/upload.js`. Uploading sends a file to `POST /api/extract`, which places the extraction into the review queue. The dashboard lists only the five newest approved invoices and links to the full `/history.html`; approved detail links show invoice information without the original document.
 * **How to test:** Run `npm run dev`, upload a readable PDF/JPG/PNG (requires `GEMINI_API_KEY`), select *Kiểm tra & duyệt*, edit if needed, then approve. If using a standalone preview port, API requests target port 3000.
 * **Expected result:** an extracted invoice remains out of saved history until it is approved; after approval it appears in the history and its detail page contains information only.
 * **Status:** Partial — dashboard, search, history and detail navigation are implemented; live upload requires a Gemini API key.
+
+## F-09 — Full invoice history
+
+* **Description:** `/history.html` lists all approved invoices with text search, processing-date range, file-type and confidence filters, page-size controls and CSV export. Invoice detail links retrieve a single approved record so older invoices remain accessible.
+* **How to test:** Open *Lịch sử hóa đơn* from the upload sidebar or choose *Xem toàn bộ lịch sử* in the dashboard list. Search/filter records, move between pages, export the filtered result and open an older record.
+* **Expected result:** the upload dashboard remains limited to the five newest approved invoices while the history page can navigate the complete approved record set.
+* **Status:** Partial — implementation is in place; full database/browser validation depends on a running database and stored invoices.
 
 ## F-08 — Manual invoice review and approval
 

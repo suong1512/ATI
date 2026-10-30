@@ -51,7 +51,7 @@
             </svg>
             <span>Review Queue / Hàng đợi duyệt</span>
           </a>
-          <a class="nav-link" href="#recent">
+          <a class="nav-link" href="/history.html" target="_top">
             <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
               <path d="M4 8V4m0 4h4"/>
               <path d="M4.8 8a9 9 0 1 1-.3 7"/>
@@ -70,7 +70,7 @@
         <header class="topbar">
           <label class="search-box">
             <span aria-hidden="true">⌕</span>
-            <input id="history-search" type="search" placeholder="Tìm theo tệp, số hóa đơn hoặc người bán..." aria-label="Tìm hóa đơn trong lịch sử" disabled>
+            <input id="history-search" type="search" placeholder="Tìm trong 5 hóa đơn gần nhất..." aria-label="Tìm hóa đơn trong danh sách gần đây" disabled>
           </label>
           <span class="prototype-label">Bản thử nghiệm · Gemini</span>
         </header>
@@ -227,10 +227,11 @@
               <div>
                 <h2>Hóa đơn đã lưu</h2>
                 <p>Chỉ hóa đơn đã được duyệt mới xuất hiện trong danh sách này.</p>
-                <p id="history-description">Lịch sử lưu cục bộ, tối đa 50 bản ghi gần nhất</p>
+                <p id="history-description">5 hóa đơn đã duyệt mới nhất</p>
               </div>
               <div class="history-actions">
                 <span class="history-count" id="history-count">0 hóa đơn</span>
+                <a class="text-button history-full-link" href="/history.html" target="_top">Xem toàn bộ lịch sử</a>
                 <button class="text-button" id="refresh-button" type="button">Làm mới</button>
                 <button class="text-button destructive-button" id="clear-history" type="button" disabled>Xóa tất cả</button>
               </div>

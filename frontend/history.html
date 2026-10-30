@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f5f7fc">
+    <title>Lịch sử hóa đơn — Smart Document Processing</title>
+    <link rel="stylesheet" href="./history.css">
+  </head>
+  <body>
+    <div class="history-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" target="_top" aria-label="Smart Document Processing — trang chủ">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="/logo-smart-document.png" width="30" height="36" alt="">
+          </span>
+          <span><strong>Smart Document Processing</strong><small>Trích xuất hóa đơn</small></span>
+        </a>
+        <a class="button button-primary sidebar-upload" href="/" target="_top">＋ Tải lên tài liệu mới</a>
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <a class="nav-link" href="/" target="_top">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.75h8l5 5v11.5H6z"/><path d="M14 3.75v5h5M12.5 17v-6m-2.5 2.5 2.5-2.5 2.5 2.5"/></svg>
+            Tải lên
+          </a>
+          <a class="nav-link" href="/review.html" target="_top">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.75h10l4 4v10.5H5z"/><path d="M15 4.75v4h4M8 13h3M8 16h3"/><circle cx="16.5" cy="16.5" r="3.5"/><path d="m19 19 2 2"/></svg>
+            Review Queue / Hàng đợi duyệt
+          </a>
+          <a class="nav-link active" href="/history.html" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4m0 4h4"/><path d="M4.8 8a9 9 0 1 1-.3 7"/><path d="M12 7v5l3 2"/></svg>
+            Lịch sử hóa đơn
+          </a>
+        </nav>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input id="history-search" type="search" placeholder="Tìm mã, số hóa đơn, tệp hoặc người bán..." aria-label="Tìm hóa đơn">
+          </label>
+          <div class="topbar-actions">
+            <button class="button button-outline" id="refresh-history" type="button">Làm mới</button>
+            <button class="button button-primary" id="export-history" type="button" disabled>Xuất báo cáo</button>
+          </div>
+        </header>
+
+        <div class="page-content">
+          <nav class="breadcrumb" aria-label="Điều hướng">
+            <a href="/" target="_top">Tải lên</a><span aria-hidden="true">/</span><span>Lịch sử hóa đơn</span>
+          </nav>
+          <section class="page-heading">
+            <div>
+              <h1>Lịch sử hóa đơn</h1>
+              <p>Theo dõi, tra cứu và xem lại các hóa đơn đã được duyệt.</p>
+            </div>
+            <span class="sync-status"><span aria-hidden="true"></span>Dữ liệu hóa đơn đã duyệt</span>
+          </section>
+
+          <section class="stats-grid" aria-label="Thống kê hóa đơn">
+            <article class="stat-card">
+              <div><span class="stat-label">Tổng hóa đơn đã lưu</span><strong id="total-count">—</strong></div>
+              <span class="stat-icon">▤</span>
+            </article>
+            <article class="stat-card">
+              <div><span class="stat-label">Đã duyệt</span><strong id="approved-count">—</strong></div>
+              <span class="stat-icon success-icon">✓</span>
+            </article>
+            <article class="stat-card">
+              <div><span class="stat-label">Đang chờ duyệt</span><strong id="pending-count">—</strong></div>
+              <span class="stat-icon pending-icon">◷</span>
+            </article>
+          </section>
+
+          <p class="notice" id="history-message" role="status" hidden></p>
+
+          <section class="panel filter-panel" aria-label="Bộ lọc lịch sử">
+            <div class="filter-row">
+              <label class="filter-search">
+                <span aria-hidden="true">⌕</span>
+                <input id="filter-search" type="search" placeholder="Tìm theo mã, số hóa đơn, tệp hoặc người bán">
+              </label>
+              <label class="date-filter">Từ ngày<input id="date-from" type="date"></label>
+              <label class="date-filter">Đến ngày<input id="date-to" type="date"></label>
+              <label class="select-filter">Loại tài liệu
+                <select id="type-filter">
+                  <option value="">Tất cả loại</option>
+                  <option value="pdf">PDF</option>
+                  <option value="jpeg">JPG</option>
+                  <option value="png">PNG</option>
+                </select>
+              </label>
+              <label class="select-filter">Độ tin cậy
+                <select id="confidence-filter">
+                  <option value="0">Tất cả</option>
+                  <option value="0.7">Từ 70%</option>
+                  <option value="0.9">Từ 90%</option>
+                </select>
+              </label>
+              <button class="text-button" id="reset-filters" type="button">Đặt lại bộ lọc</button>
+            </div>
+          </section>
+
+          <section class="panel history-panel" aria-label="Danh sách hóa đơn đã lưu">
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>MÃ HÓA ĐƠN</th>
+                    <th>TÊN TÀI LIỆU</th>
+                    <th>SỐ HÓA ĐƠN</th>
+                    <th>ĐỐI TÁC / ĐƠN VỊ</th>
+                    <th>TỔNG TIỀN</th>
+                    <th>NGÀY XỬ LÝ</th>
+                    <th>LOẠI TÀI LIỆU</th>
+                    <th>ĐỘ TIN CẬY</th>
+                    <th>TRẠNG THÁI</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="history-rows">
+                  <tr>                  <td class="empty-cell" colspan="10">Đang tải lịch sử...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <footer class="table-footer">
+              <span id="results-summary">Đang tải...</span>
+              <div class="pagination">
+                <label>Số dòng/trang
+                  <select id="page-size">
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="50">50</option>
+                  </select>
+                </label>
+                <button class="page-button" id="first-page" type="button" aria-label="Trang đầu">«</button>
+                <button class="page-button" id="previous-page" type="button" aria-label="Trang trước">‹</button>
+                <span id="page-buttons" class="page-buttons"></span>
+                <button class="page-button" id="next-page" type="button" aria-label="Trang sau">›</button>
+                <button class="page-button" id="last-page" type="button" aria-label="Trang cuối">»</button>
+              </div>
+            </footer>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="./history.js" defer></script>
+  </body>
+</html>

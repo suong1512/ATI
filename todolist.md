@@ -1,6 +1,16 @@
 # Todolist
 
-Last updated: 30/10/2026 · Active task: **TASK-MANUAL-INVOICE-REVIEW-30-10**
+Last updated: 30/10/2026 · Active task: **TASK-FULL-INVOICE-HISTORY-30-10**
+
+## TASK-FULL-INVOICE-HISTORY-30-10 — Add full invoice history page
+
+- [x] Limit the upload dashboard to five newest approved invoices and link to full history.
+- [x] Add a history page with search, filters, pagination and CSV export.
+- [x] Add API support for listing all approved invoices and fetching one approved record.
+- [x] Update feature, API and architecture documentation.
+- [x] Run frontend syntax checks, typecheck, focused ESLint and production build.
+- [x] Smoke-test history assets and API limit handling (`limit=all`, `limit=5`, invalid limit, record lookup).
+- [x] Browser-check upload recent list/link and history page search/filter reset on desktop/mobile.
 
 ## TASK-MANUAL-INVOICE-REVIEW-30-10 — Add manual invoice approval
 

@@ -241,19 +241,16 @@
         }
 
         try {
-          const response = await fetch(`${apiOrigin}/api/invoices`, { cache: "no-store" });
-          const payload = await readJsonResponse(response, "/api/invoices");
-          if (!response.ok || !payload.ok || !Array.isArray(payload.data)) {
+          const endpoint = `${apiOrigin}/api/invoices/${encodeURIComponent(recordId)}`;
+          const response = await fetch(endpoint, { cache: "no-store" });
+          const payload = await readJsonResponse(response, "/api/invoices/:recordId");
+          if (!response.ok || !payload.ok || !payload.data) {
             throw new Error(
               payload.error?.message ||
-                `Không tải được danh sách hóa đơn (HTTP ${response.status}).`,
+                `Không tải được hóa đơn (HTTP ${response.status}).`,
             );
           }
-          currentRecord = payload.data.find((record) => record.recordId === recordId);
-          if (!currentRecord) {
-            showError("Không tìm thấy hóa đơn này. Có thể hóa đơn đã bị xóa khỏi danh sách.");
-            return;
-          }
+          currentRecord = payload.data;
           renderInvoice(currentRecord);
         } catch (error) {
           showError(`Không thể tải chi tiết hóa đơn: ${error.message}`);

@@ -1,4 +1,9 @@
-import { clearInvoices, InvoiceStoreError, listInvoices } from "@/lib/invoiceStore";
+import {
+  clearInvoices,
+  DEFAULT_INVOICE_LIST_LIMIT,
+  InvoiceStoreError,
+  listInvoices,
+} from "@/lib/invoiceStore";
 import { handleLocalFrontendOptions, withLocalFrontendCors } from "@/lib/localFrontendCors";
 
 export const runtime = "nodejs";
@@ -6,8 +11,26 @@ export const dynamic = "force-dynamic";
 
 /** GET /api/invoices — list approved invoices from MariaDB and MongoDB. */
 export async function GET(request: Request) {
+  const rawLimit = new URL(request.url).searchParams.get("limit");
+  let limit: number | null = DEFAULT_INVOICE_LIST_LIMIT;
+  if (rawLimit === "all") {
+    limit = null;
+  } else if (rawLimit !== null) {
+    const parsedLimit = Number(rawLimit);
+    if (!/^\d+$/.test(rawLimit) || !Number.isSafeInteger(parsedLimit) || parsedLimit < 1 || parsedLimit > 1000) {
+      return withLocalFrontendCors(
+        request,
+        Response.json(
+          { ok: false, error: { code: "INVALID_LIMIT", message: "Limit phải từ 1 đến 1000 hoặc là 'all'." } },
+          { status: 400 },
+        ),
+      );
+    }
+    limit = parsedLimit;
+  }
+
   try {
-    const invoices = await listInvoices();
+    const invoices = await listInvoices(limit);
     return withLocalFrontendCors(
       request,
       Response.json({ ok: true, count: invoices.length, data: invoices }),

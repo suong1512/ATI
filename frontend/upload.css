@@ -2347,6 +2347,19 @@ h1 {
   white-space: nowrap;
 }
 
+.history-full-link {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid #d5def0;
+  border-radius: 6px;
+  padding: 6px 9px;
+  text-decoration: none;
+}
+
+.history-full-link:hover {
+  background: #f3f6ff;
+}
+
 .destructive-button {
   border: 1px solid #f0c9c6;
   border-radius: 6px;

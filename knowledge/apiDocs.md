@@ -211,15 +211,18 @@ Invalid JSON or invoice fields return `400`; a missing record returns `404 REVIE
 
 ## 5. `GET /api/invoices`
 
-Lists the newest 50 **approved** invoices indexed in MariaDB and loads their full payloads from MongoDB. Pending reviews are excluded.
+Lists approved invoices indexed in MariaDB and loads their full payloads from MongoDB. Pending reviews are excluded. By default, the newest 50 records are returned. Use `?limit=5` for a short recent list or `?limit=all` for the complete history; numeric limits must be from 1 to 1000.
 
 ```bash
 curl -s http://localhost:3000/api/invoices
+curl -s 'http://localhost:3000/api/invoices?limit=all'
 ```
 
 ```json
 { "ok": true, "count": 1, "data": [ /* ExtractionResult[] */ ] }
 ```
+
+Invalid limits return `400 INVALID_LIMIT`. `GET /api/invoices/:recordId` returns one approved invoice as `{ "ok": true, "data": ExtractionResult }`; it returns `404 INVOICE_NOT_FOUND` when the record is missing or not approved. The detail page uses this endpoint so older records remain accessible without loading the complete list.
 
 ## 6. `GET /api/invoices/:recordId/document`
 

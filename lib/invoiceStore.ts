@@ -7,7 +7,7 @@ import {
 } from "./invoiceSchema";
 
 const MONGO_COLLECTION = "Extraction_Records";
-const MAX_RECORDS = 50;
+export const DEFAULT_INVOICE_LIST_LIMIT = 50;
 
 let schemaInitialization: Promise<void> | undefined;
 
@@ -87,6 +87,7 @@ async function getStorage() {
 
 async function listInvoicesByStatus(
   status: "pending" | "approved",
+  limit: number | null,
 ): Promise<ExtractionResult[]> {
   try {
     const { pool, collection } = await getStorage();
@@ -94,9 +95,8 @@ async function listInvoicesByStatus(
       `SELECT record_id
        FROM Extracted_Invoice
        WHERE review_status = ?
-       ORDER BY created_at DESC, record_id DESC
-       LIMIT ?`,
-      [status, MAX_RECORDS],
+       ORDER BY created_at DESC, record_id DESC${limit === null ? "" : "\n       LIMIT ?"}`,
+      limit === null ? [status] : [status, limit],
     );
     const recordIds = rows.map((row) => row.record_id);
     if (recordIds.length === 0) {
@@ -125,12 +125,38 @@ async function listInvoicesByStatus(
   }
 }
 
-export function listInvoices(): Promise<ExtractionResult[]> {
-  return listInvoicesByStatus("approved");
+export function listInvoices(limit: number | null = DEFAULT_INVOICE_LIST_LIMIT): Promise<ExtractionResult[]> {
+  return listInvoicesByStatus("approved", limit);
 }
 
 export function listPendingReviews(): Promise<ExtractionResult[]> {
-  return listInvoicesByStatus("pending");
+  return listInvoicesByStatus("pending", DEFAULT_INVOICE_LIST_LIMIT);
+}
+
+export async function getApprovedInvoice(recordId: string): Promise<ExtractionResult | null> {
+  try {
+    const { pool, collection } = await getStorage();
+    const [rows] = await pool.execute<InvoiceIndexRow[]>(
+      `SELECT record_id
+       FROM Extracted_Invoice
+       WHERE record_id = ? AND review_status = 'approved'
+       LIMIT 1`,
+      [recordId],
+    );
+    if (rows.length === 0) return null;
+
+    const document = await collection.findOne({ _id: recordId });
+    if (!document || document._id !== recordId) {
+      throw new Error(`MongoDB payload is missing for invoice ${recordId}.`);
+    }
+    const { _id: _mongoId, ...payload } = document;
+    if (_mongoId !== recordId) {
+      throw new Error(`MongoDB returned an unexpected invoice payload for ${recordId}.`);
+    }
+    return extractionResultSchema.parse(payload);
+  } catch (error) {
+    throw new InvoiceStoreError("Unable to read the invoice from the database.", { cause: error });
+  }
 }
 
 export async function saveInvoice(

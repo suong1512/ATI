@@ -91,7 +91,8 @@ ATI_PhAnh_group/
 | Component | File | Responsibility |
 | --- | --- | --- |
 | Home page | `app/page.tsx` | Displays the full-screen dashboard |
-| Dashboard | `frontend/upload.html` + `frontend/upload.css` + `frontend/upload.js` | Upload UI, statistics and history; calls same-origin API routes |
+| Dashboard | `frontend/upload.html` + `frontend/upload.css` + `frontend/upload.js` | Upload UI, statistics and five newest approved invoices; links to full history |
+| Invoice history | `frontend/history.html` + `frontend/history.css` + `frontend/history.js` | Complete approved-invoice list with search, filters, pagination and CSV export |
 | Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Shows information for an approved invoice; no original preview |
 | Manual review | `frontend/review.html` + `frontend/review.css` + `frontend/review.js` | Shows original document and editable extracted fields side by side; approves invoice |
 | Legacy React components | `components/` | Alternative upload, result and history components; dashboard at `/` uses the static frontend |
@@ -102,10 +103,10 @@ ATI_PhAnh_group/
 | Dual-branch extraction | `lib/geminiExtractor.ts` | Runs local OCR and one or more configured Gemini Vision models concurrently; stores OCR evidence and all model outputs |
 | Document metadata | `lib/mockExtractor.ts` | Magic-byte kind detection and PDF page estimate |
 | Database connections | `lib/database.ts` | Shared MariaDB pool and MongoDB connection from server-side environment variables |
-| Invoice store | `lib/invoiceStore.ts` | Saves pending records, lists pending/approved records, approves reviewed values, retrieves originals and clears records |
+| Invoice store | `lib/invoiceStore.ts` | Saves pending records, lists pending/approved records, reads one approved record, approves reviewed values, retrieves originals and clears records |
 | API: extract | `app/api/extract/route.ts` | Validates the upload, runs the extractor, validates with Zod, saves as pending and returns JSON |
 | API: reviews | `app/api/reviews/route.ts` and `app/api/reviews/approve/route.ts` | Lists pending records and persists edits/approval |
-| API: invoices | `app/api/invoices/route.ts` | Lists approved invoices / resets pending and approved records |
+| API: invoices | `app/api/invoices/route.ts`, `app/api/invoices/[recordId]/route.ts` | Lists approved invoices (default 50, or all/selected limit), returns one approved invoice / resets pending and approved records |
 | API: original document | `app/api/invoices/[recordId]/document/route.ts` | Returns a saved original PDF/image for manual review |
 
 ---
@@ -188,7 +189,8 @@ sequenceDiagram
 | `POST` | `/api/extract` | Upload a PDF/PNG/JPEG and save extraction as pending |
 | `GET` | `/api/reviews` | List pending extracted invoices |
 | `POST` | `/api/reviews/approve` | Save reviewed invoice fields and approve a pending record |
-| `GET` | `/api/invoices` | List approved invoices |
+| `GET` | `/api/invoices` | List approved invoices; `?limit=all` returns complete history |
+| `GET` | `/api/invoices/:recordId` | Return one approved invoice |
 | `DELETE` | `/api/invoices` | Delete pending and approved invoice records (demo helper) |
 
 Details, payloads and error codes: `knowledge/apiDocs.md`.
@@ -222,7 +224,7 @@ OCR itself runs locally; Tesseract may download its configured language data on 
 3. **OCR is local and resource-bounded:** PDF OCR renders up to 50 pages; OCR language defaults to `vie+eng`. One or more Vision model names can be selected with `GEMINI_MODELS`; each configured Vision result is returned separately. The first result remains the legacy top-level invoice; no automatic reconciliation is claimed.
 4. **Validation status (30/09/2026)** — `npm install`, `npm run typecheck`, `npm run lint` and 7 `curl` API cases all passed; two bugs were found and fixed during validation. A full `npm run build` and the browser click-through are still pending. Evidence: `state/task_30_09_state.md` §5.
 5. **ESLint engine risk** — `eslint-visitor-keys@5` requires Node `^20.19.0 || ^22.13.0 || >=24`, but the image pins `node:20.18.0` (`npm warn EBADENGINE`). `npm run lint` may fail until the image is bumped (e.g. `node:20.19.0-bookworm`) or ESLint is removed.
-6. **Polyglot persistence** — MariaDB stores indexed invoice metadata and MongoDB stores each complete extraction payload; the API lists the latest 50 records.
+6. **Polyglot persistence** — MariaDB stores indexed invoice metadata and MongoDB stores each complete extraction payload; the upload dashboard requests five newest approved records and the history page can request all approved records.
 7. **No authentication / RBAC**; every request can read and reset invoice storage.
 8. **Upload limit** 10 MB; accepted: `application/pdf`, `image/png`, `image/jpeg` (client checks mime type or extension, server checks magic bytes).
 9. **Client-safe constants** must stay in `lib/uploadConfig.ts`; `lib/mockExtractor.ts` and `lib/invoiceStore.ts` import `node:crypto` / `node:fs` and must never be imported by client components.
