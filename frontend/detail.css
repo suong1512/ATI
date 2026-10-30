@@ -55,8 +55,8 @@ button {
 
 .topbar-brand-mark {
   display: grid;
-  width: 30px;
-  height: 36px;
+  width: 34px;
+  height: 40px;
   flex: 0 0 auto;
   place-items: center;
   overflow: hidden;
@@ -64,8 +64,8 @@ button {
 
 .topbar-brand-mark img {
   display: block;
-  width: 30px;
-  height: 36px;
+  width: 34px;
+  height: 40px;
   object-fit: contain;
 }
 
@@ -577,13 +577,13 @@ td {
   }
 
   .topbar-brand-mark {
-    width: 26px;
-    height: 31px;
+    width: 30px;
+    height: 35px;
   }
 
   .topbar-brand-mark img {
-    width: 26px;
-    height: 31px;
+    width: 30px;
+    height: 35px;
   }
 
   .topbar-brand-copy strong {

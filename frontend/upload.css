@@ -67,10 +67,17 @@ a {
 
 .brand-mark {
   display: grid;
-  width: 22px;
-  height: 27px;
+  width: 26px;
+  height: 32px;
   flex: 0 0 auto;
   place-items: center;
+}
+
+.brand-mark img {
+  display: block;
+  width: 26px;
+  height: 32px;
+  object-fit: contain;
 }
 
 .brand-mark svg {
@@ -1189,8 +1196,13 @@ th:first-child, td:first-child {
   }
 
   .brand-mark {
-    width: 30px;
-    height: 36px;
+    width: 34px;
+    height: 40px;
+  }
+
+  .brand-mark img {
+    width: 34px;
+    height: 40px;
   }
 
   .brand-mark svg {
