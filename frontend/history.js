@@ -45,6 +45,12 @@
       .toLocaleLowerCase("vi");
   }
 
+  function formatRecordId(recordId) {
+    const [prefix, hash, timestamp] = recordId.split("_");
+    if (prefix !== "inv" || !hash || !timestamp) return recordId;
+    return `inv_${hash.slice(0, 8)}…_${timestamp}`;
+  }
+
   function dateKey(value) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return "";
@@ -155,7 +161,9 @@
       codeLink.className = "record-code";
       codeLink.href = `/detail.html?id=${encodeURIComponent(record.recordId)}`;
       codeLink.target = "_top";
-      codeLink.textContent = record.recordId;
+      codeLink.textContent = formatRecordId(record.recordId);
+      codeLink.title = record.recordId;
+      codeLink.setAttribute("aria-label", `Mã hóa đơn ${record.recordId}`);
       codeCell.append(codeLink);
 
       const nameCell = appendCell(row, record.source.fileName, "file-cell");

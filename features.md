@@ -72,7 +72,7 @@
 
 ## F-09 — Full invoice history
 
-* **Description:** `/history.html` lists all approved invoices with text search, processing-date range, file-type and confidence filters, page-size controls and CSV export. Invoice detail links retrieve a single approved record so older invoices remain accessible.
+* **Description:** `/history.html` lists all approved invoices with text search, processing-date range, file-type and confidence filters, page-size controls and CSV export. Invoice IDs are shortened visually while retaining the complete ID on hover and for assistive technology; detail links retrieve a single approved record so older invoices remain accessible.
 * **How to test:** Open *Lịch sử hóa đơn* from the upload sidebar or choose *Xem toàn bộ lịch sử* in the dashboard list. Search/filter records, move between pages, export the filtered result and open an older record.
 * **Expected result:** the upload dashboard remains limited to the three newest approved invoices while the history page can navigate the complete approved record set.
 * **Status:** Partial — implementation is in place; full database/browser validation depends on a running database and stored invoices.
