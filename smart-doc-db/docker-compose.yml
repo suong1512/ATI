@@ -4,7 +4,7 @@ services:
   mysql:
     image: mariadb:10.11
     container_name: smart_doc_mysql
-    restart: unless-stopped   # <-- Tự động bật lại khi khởi động Docker/Máy tính
+    restart: unless-stopped # <-- Tự động bật lại khi khởi động Docker/Máy tính
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in smart-doc-db/.env}
       MYSQL_DATABASE: ${MYSQL_DATABASE:?Set MYSQL_DATABASE in smart-doc-db/.env}
@@ -18,7 +18,7 @@ services:
   mongodb:
     image: mongo:latest
     container_name: smart_doc_mongo
-    restart: unless-stopped   # <-- Tự động bật lại khi khởi động Docker/Máy tính
+    restart: unless-stopped # <-- Tự động bật lại khi khởi động Docker/Máy tính
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:?Set MONGODB_USER in smart-doc-db/.env}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:?Set MONGODB_PASSWORD in smart-doc-db/.env}

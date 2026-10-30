@@ -1,0 +1,18 @@
+{
+  "name": "smart-doc-db",
+  "version": "1.0.0",
+  "description": "",
+  "main": "db.js",
+  "scripts": {
+    "test": "node test_connection.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "mongoose": "^9.11.4",
+    "mysql2": "^3.24.6"
+  }
+}
