@@ -8,24 +8,39 @@
     <link rel="stylesheet" href="./review.css">
   </head>
   <body>
-    <header class="app-topbar">
-      <a class="topbar-brand" href="/" target="_top" aria-label="Smart Document Processing — trang chủ">
-        <span class="topbar-brand-mark" aria-hidden="true">
-          <img src="/logo-smart-document.png" width="34" height="40" alt="">
-        </span>
-        <span class="topbar-brand-copy">
-          <strong>Smart Document Processing</strong>
-          <small>Trích xuất hóa đơn</small>
-        </span>
-      </a>
-      <div class="topbar-search-area">
-        <label class="topbar-search">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Tìm theo tệp, số hóa đơn hoặc người bán..." aria-label="Tìm hóa đơn">
-        </label>
-      </div>
-    </header>
-    <main class="review-page">
+    <div class="review-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" target="_top" aria-label="Smart Document Processing — trang chủ">
+          <span class="brand-mark" aria-hidden="true">
+            <img src="/logo-smart-document.png" width="30" height="36" alt="">
+          </span>
+          <span><strong>Smart Document Processing</strong><small>Trích xuất hóa đơn</small></span>
+        </a>
+        <a class="button button-primary sidebar-upload" href="/" target="_top">＋ Tải lên tài liệu mới</a>
+        <nav class="main-nav" aria-label="Điều hướng chính">
+          <a class="nav-link" href="/" target="_top">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.75h8l5 5v11.5H6z"/><path d="M14 3.75v5h5M12.5 17v-6m-2.5 2.5 2.5-2.5 2.5 2.5"/></svg>
+            Tải lên
+          </a>
+          <a class="nav-link active" href="/review.html" aria-current="page">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.75h10l4 4v10.5H5z"/><path d="M15 4.75v4h4M8 13h3M8 16h3"/><circle cx="16.5" cy="16.5" r="3.5"/><path d="m19 19 2 2"/></svg>
+            Hàng đợi duyệt
+          </a>
+          <a class="nav-link" href="/history.html" target="_top">
+            <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V4m0 4h4"/><path d="M4.8 8a9 9 0 1 1-.3 7"/><path d="M12 7v5l3 2"/></svg>
+            Lịch sử hóa đơn
+          </a>
+        </nav>
+      </aside>
+
+      <div class="main-content">
+        <header class="topbar">
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input type="search" placeholder="Tìm theo tệp, số hóa đơn hoặc người bán..." aria-label="Tìm hóa đơn">
+          </label>
+        </header>
+        <main class="review-page">
       <nav class="breadcrumb" aria-label="Điều hướng">
         <a href="/" target="_top">← Tải lên</a><span aria-hidden="true">/</span><span>Hàng đợi duyệt</span>
       </nav>
@@ -111,7 +126,9 @@
           </footer>
         </form>
       </section>
-    </main>
+        </main>
+      </div>
+    </div>
     <script src="./review.js" defer></script>
   </body>
 </html>
