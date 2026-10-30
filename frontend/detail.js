@@ -35,28 +35,28 @@
 
       function missingInvoiceFields(invoice) {
         const fields = [
-          ["Số hóa đơn", "invoice.invoiceNumber", invoice.invoiceNumber],
-          ["Ký hiệu hóa đơn", "invoice.serialNumber", invoice.serialNumber],
-          ["Ngày phát hành", "invoice.issueDate", invoice.issueDate],
-          ["Tên người bán", "invoice.sellerName", invoice.sellerName],
-          ["Mã số thuế người bán", "invoice.sellerTaxId", invoice.sellerTaxId],
-          ["Địa chỉ người bán", "invoice.sellerAddress", invoice.sellerAddress],
-          ["Tên người mua", "invoice.buyerName", invoice.buyerName],
-          ["Mã số thuế người mua", "invoice.buyerTaxId", invoice.buyerTaxId],
-          ["Tiền tệ", "invoice.currency", invoice.currency],
-          ["Cộng tiền hàng", "invoice.subtotal", invoice.subtotal],
-          ["Thuế suất", "invoice.taxRate", invoice.taxRate],
-          ["Tiền thuế", "invoice.taxAmount", invoice.taxAmount],
-          ["Tổng thanh toán", "invoice.totalAmount", invoice.totalAmount],
+          ["Số hóa đơn", "invoiceNumber", invoice.invoiceNumber],
+          ["Ký hiệu hóa đơn", "serialNumber", invoice.serialNumber],
+          ["Ngày phát hành", "issueDate", invoice.issueDate],
+          ["Tên người bán", "sellerName", invoice.sellerName],
+          ["Mã số thuế người bán", "sellerTaxId", invoice.sellerTaxId],
+          ["Địa chỉ người bán", "sellerAddress", invoice.sellerAddress],
+          ["Tên người mua", "buyerName", invoice.buyerName],
+          ["Mã số thuế người mua", "buyerTaxId", invoice.buyerTaxId],
+          ["Tiền tệ", "currency", invoice.currency],
+          ["Cộng tiền hàng", "subtotal", invoice.subtotal],
+          ["Thuế suất", "taxRate", invoice.taxRate],
+          ["Tiền thuế", "taxAmount", invoice.taxAmount],
+          ["Tổng thanh toán", "totalAmount", invoice.totalAmount],
         ];
         const missing = fields
-          .filter(([, path, value]) => value === null || value === undefined || value === "" || (path === "invoice.currency" && value === 0))
-          .map(([label, path]) => `${label} (${path})`);
+          .filter(([, key, value]) => value === null || value === undefined || value === "" || (key === "currency" && value === 0))
+          .map(([label]) => label);
 
         if (invoice.lineItems === null || invoice.lineItems === undefined) {
-          missing.push("Danh sách hàng hóa (invoice.lineItems)");
+          missing.push("Danh sách hàng hóa");
         } else if (invoice.lineItems.length === 0) {
-          missing.push("Danh sách hàng hóa trống (invoice.lineItems)");
+          missing.push("Danh sách hàng hóa trống");
         } else {
           invoice.lineItems.forEach((item, index) => {
             [
@@ -65,9 +65,9 @@
               ["Số lượng", "quantity", item.quantity],
               ["Đơn giá", "unitPrice", item.unitPrice],
               ["Thành tiền", "lineTotal", item.lineTotal],
-            ].forEach(([label, key, value]) => {
+            ].forEach(([label, , value]) => {
               if (value === null || value === undefined || value === "") {
-                missing.push(`${label} (invoice.lineItems[${index}].${key})`);
+                missing.push(`${label} (mặt hàng ${index + 1})`);
               }
             });
           });
@@ -77,19 +77,49 @@
 
       function zeroValuePaths(invoice) {
         const fields = [
-          ["invoice.subtotal", invoice.subtotal],
-          ["invoice.taxRate", invoice.taxRate],
-          ["invoice.taxAmount", invoice.taxAmount],
-          ["invoice.totalAmount", invoice.totalAmount],
+          ["Cộng tiền hàng", invoice.subtotal],
+          ["Thuế suất", invoice.taxRate],
+          ["Tiền thuế", invoice.taxAmount],
+          ["Tổng thanh toán", invoice.totalAmount],
         ];
         (invoice.lineItems ?? []).forEach((item, index) => {
           fields.push(
-            [`invoice.lineItems[${index}].quantity`, item.quantity],
-            [`invoice.lineItems[${index}].unitPrice`, item.unitPrice],
-            [`invoice.lineItems[${index}].lineTotal`, item.lineTotal],
+            [`Số lượng (mặt hàng ${index + 1})`, item.quantity],
+            [`Đơn giá (mặt hàng ${index + 1})`, item.unitPrice],
+            [`Thành tiền (mặt hàng ${index + 1})`, item.lineTotal],
           );
         });
-        return fields.filter(([, value]) => value === 0).map(([path]) => path);
+        return fields.filter(([, value]) => value === 0).map(([label]) => label);
+      }
+
+      function readableExtractionWarning(warning) {
+        const invoiceLabels = {
+          invoiceNumber: "Số hóa đơn",
+          serialNumber: "Ký hiệu hóa đơn",
+          issueDate: "Ngày phát hành",
+          sellerName: "Tên người bán",
+          sellerTaxId: "Mã số thuế người bán",
+          sellerAddress: "Địa chỉ người bán",
+          buyerName: "Tên người mua",
+          buyerTaxId: "Mã số thuế người mua",
+          currency: "Tiền tệ",
+          subtotal: "Cộng tiền hàng",
+          taxRate: "Thuế suất",
+          taxAmount: "Tiền thuế",
+          totalAmount: "Tổng thanh toán",
+        };
+        const itemLabels = {
+          name: "Tên hàng hóa",
+          unit: "Đơn vị",
+          quantity: "Số lượng",
+          unitPrice: "Đơn giá",
+          lineTotal: "Thành tiền",
+        };
+
+        return warning
+          .replace(/invoice\.lineItems\[(\d+)\]\.(\w+)/g, (_path, index, key) =>
+            `${itemLabels[key] || "Thông tin mặt hàng"} (mặt hàng ${Number(index) + 1})`)
+          .replace(/invoice\.(\w+)/g, (_path, key) => invoiceLabels[key] || "Thông tin hóa đơn");
       }
 
       function showError(message) {
@@ -172,10 +202,14 @@
         warnings.replaceChildren();
         const missingFields = missingInvoiceFields(invoice);
         const zeroFields = zeroValuePaths(invoice);
+        const modelWarnings = (extraction.warnings ?? [])
+          .map(readableExtractionWarning)
+          .filter((warning) => ![...missingFields, ...zeroFields].some((field) =>
+            warning === field || warning.startsWith(`${field}:`) || warning.startsWith(`${field} `)));
         const warningMessages = [
           ...(missingFields.length ? [`Thiếu giá trị: ${missingFields.join(", ")}`] : []),
           ...(zeroFields.length ? [`Giá trị 0 cần đối chiếu: ${zeroFields.join(", ")}`] : []),
-          ...(extraction.warnings ?? []),
+          ...modelWarnings,
         ];
         if (warningMessages.length) {
           const title = document.createElement("strong");
