@@ -128,7 +128,7 @@ button {
 }
 
 .detail-page {
-  width: min(1600px, calc(100% - 64px));
+  width: min(1600px, calc(100% - 96px));
   margin: 0 auto;
   padding: 26px 0 20px;
 }
@@ -501,7 +501,7 @@ td {
   }
 
   .detail-page {
-    width: min(100% - 32px, 560px);
+    width: min(100% - 48px, 560px);
     padding-top: 17px;
   }
 
