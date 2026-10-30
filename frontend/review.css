@@ -64,7 +64,7 @@ button, input, select { font: inherit; }
 .topbar-search input::placeholder { color: #68758d; opacity: 1; }
 
 .review-page {
-  width: min(1800px, calc(100% - 32px));
+  width: min(1800px, calc(100% - 120px));
   margin: 0 auto;
   padding: 22px 0;
 }
@@ -201,7 +201,7 @@ td:first-child input { min-width: 130px; }
   .topbar-search > span { font-size: 13px; }
   .topbar-search input { font-size: 10px; }
 
-  .review-page { width: calc(100% - 20px); padding-top: 14px; }
+  .review-page { width: calc(100% - 48px); padding-top: 14px; }
   .review-header { align-items: flex-start; }
   .review-header p { max-width: 30ch; line-height: 1.5; }
   .queue-toolbar { flex-wrap: wrap; }
