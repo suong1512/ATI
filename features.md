@@ -3,7 +3,7 @@
 > User-visible functionality of the project.
 > Status vocabulary: **Working · Partial · Mocked · In-Progress · Blocked**.
 > Architecture: `knowledge/architecture.md` · API details: `knowledge/apiDocs.md`
-> Last updated: 30/10/2026.
+> Last updated: 02/11/2026.
 > `Working` = verified end-to-end at HTTP/data level · `Partial` = verified at API/data level, UI not
 > click-tested in a browser yet · `Mocked` = works, but the data is simulated.
 > Evidence: `state/task_30_09_state.md` §5 and `state/task_26_10_ui_state.md` §5.
@@ -83,6 +83,13 @@
 * **How to test:** Upload a document and confirm the success message, choose *Hàng đợi duyệt* from the sidebar, compare the original document with extracted data, optionally edit fields, and choose *Duyệt và lưu hóa đơn*. Confirm the approval message appears on the queue page and the invoice now appears under *Hóa đơn đã lưu*.
 * **Expected result:** pending records remain out of `GET /api/invoices`; approved records are returned there and removed from `GET /api/reviews`.
 * **Status:** Partial — workflow implementation is in place; end-to-end confirmation depends on a running database and Gemini configuration.
+
+## F-10 — Shared page footer
+
+* **Description:** The upload dashboard, review queue, invoice history and invoice detail pages display a consistent footer with the Smart Document Processing name and a short product description.
+* **How to test:** Open `/`, `/review.html`, `/history.html` and an approved invoice detail page on desktop and mobile widths.
+* **Expected result:** Each page displays the same responsive footer beneath its main content.
+* **Status:** Working — footer markup and styles are present on all four pages.
 
 ---
 

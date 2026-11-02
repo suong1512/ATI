@@ -42,6 +42,8 @@ button, input, select { font: inherit; }
 .search-box input, .filter-search input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
 .topbar-actions { display: flex; gap: 8px; }
 .page-content { max-width: 1600px; margin: 0 auto; padding: 18px clamp(18px, 2.4vw, 36px) 32px; }
+.page-footer { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 14px; margin-top: 24px; border-top: 1px solid var(--line); padding: 14px 2px 4px; color: var(--muted); font-size: 11px; line-height: 1.5; }
+.page-footer a { color: var(--blue); font-weight: 600; }
 .breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--muted); font-size: 11px; }
 .breadcrumb a { color: var(--blue); }
 .page-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 16px; }

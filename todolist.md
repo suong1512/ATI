@@ -1,6 +1,12 @@
 # Todolist
 
-Last updated: 30/10/2026 · Active task: **TASK-FULL-INVOICE-HISTORY-30-10**
+Last updated: 02/11/2026 · Active task: **TASK-SHARED-FOOTER-02-11**
+
+## TASK-SHARED-FOOTER-02-11 — Add a footer to every page
+
+- [x] Add a consistent footer to upload, review, history and invoice detail pages.
+- [x] Style the footer responsively and update the feature inventory.
+- [x] Validate page markup, footer coverage and frontend production build.
 
 ## TASK-FULL-INVOICE-HISTORY-30-10 — Add full invoice history page
 
