@@ -139,18 +139,6 @@ a {
   background: #f8faff;
 }
 
-.sidebar-upload {
-  width: 100%;
-  margin-top: 19px;
-  color: #fff !important;
-}
-
-.sidebar-upload span {
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 10px;
-}
-
 .main-nav {
   display: grid;
   gap: 3px;
@@ -1238,12 +1226,6 @@ th:first-child, td:first-child {
     font-size: 9px;
   }
 
-  .sidebar-upload {
-    min-height: 40px;
-    margin-top: 28px;
-    font-size: 12px;
-  }
-
   .main-nav {
     gap: 5px;
     margin-top: 18px;
@@ -1708,12 +1690,6 @@ th:first-child, td:first-child {
     padding: 9px 12px;
   }
 
-  .sidebar-upload {
-    width: auto;
-    margin: 0;
-    padding: 0 9px;
-  }
-
   .main-nav, .sidebar-bottom {
     display: none;
   }
@@ -1903,10 +1879,6 @@ th:first-child, td:first-child {
     display: none;
   }
 
-  .sidebar-upload {
-    font-size: 9px;
-  }
-
   .auto-button {
     padding: 0 6px !important;
   }
@@ -2032,10 +2004,6 @@ th:first-child, td:first-child {
 
   .brand strong {
     font-size: 13px;
-  }
-
-  .sidebar-upload {
-    font-size: 12px;
   }
 
   .search-box input {
@@ -2546,8 +2514,4 @@ td {
     width: 100%;
   }
 
-  .sidebar-upload {
-    max-width: 145px;
-    white-space: normal;
-  }
 }

@@ -34,7 +34,6 @@ button, input, select { font: inherit; }
 .brand-mark img { display: block; width: 34px; height: 40px; object-fit: contain; }
 .brand strong { display: block; color: #111827; font-size: 14px; line-height: 1.25; }
 .brand small { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
-.sidebar-upload { width: 100%; margin-top: 24px; }
 .main-nav { display: grid; gap: 5px; margin-top: 20px; }
 .nav-link { display: flex; min-height: 40px; align-items: center; gap: 10px; border-radius: 5px; padding: 0 10px; color: #4b5563; font-size: 12px; }
 .nav-link:hover, .nav-link.active { background: #eef2ff; color: #1454ee; }
@@ -193,7 +192,6 @@ td:first-child input { min-width: 130px; }
 @media (max-width: 720px) {
   .sidebar { position: static; width: 100%; min-height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 10px 14px; }
   .brand { max-width: 280px; }
-  .sidebar-upload { width: auto; min-height: 32px; margin-top: 10px; }
   .main-nav { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
   .nav-link { min-height: 34px; padding: 0 8px; font-size: 10px; }
   .nav-icon { width: 14px; height: 14px; flex-basis: 14px; }

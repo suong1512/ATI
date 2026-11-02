@@ -1,6 +1,12 @@
 # Todolist
 
-Last updated: 02/11/2026 · Active task: **TASK-SHARED-FOOTER-02-11**
+Last updated: 02/11/2026 · Active task: **TASK-REMOVE-SIDEBAR-UPLOAD-CTA-02-11**
+
+## TASK-REMOVE-SIDEBAR-UPLOAD-CTA-02-11 — Remove sidebar upload button
+
+- [x] Remove the separate upload button from the dashboard, review and history sidebars.
+- [x] Keep the sidebar upload navigation and remove unused button styles.
+- [x] Update the feature description and validate the frontend build.
 
 ## TASK-SHARED-FOOTER-02-11 — Add a footer to every page
 
