@@ -2,14 +2,14 @@
 
 > **Source of truth for the architecture is `knowledge/architecture.md`.**
 > This file is the short version required by `agents.md` and must stay consistent with it.
-> Last updated: 03/11/2026 — approved invoice details can download the corresponding original document.
+> Last updated: 03/11/2026 — approved invoice details can generate a PNG report image from extracted data.
 > Validation status: manual approval was verified with a temporary local database record. Live Vision
 > calls still require a configured API key and a real invoice upload.
 
 ## 1. System Overview
 
 A single Next.js (App Router) fullstack prototype. The browser renders the upload dashboard, a full invoice history page and a
-manual review page. Approved invoice details can download the corresponding original PDF/image through the document API.
+manual review page. Approved invoice details can generate a PNG report image from extracted invoice data.
 The server validates and extracts uploads with local Tesseract OCR and configured
 Gemini Vision model(s), stores each result as pending, then moves it to approved only after review.
 MariaDB indexes the review status; MongoDB stores the extraction payload and original document.

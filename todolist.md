@@ -1,6 +1,14 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-DETAIL-ORIGINAL-DOWNLOAD-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-DETAIL-REPORT-PNG-03-11**
+
+## TASK-DETAIL-REPORT-PNG-03-11 — Generate report image from extracted data
+
+- [x] Generate a PNG report image from the selected invoice's extracted fields instead of downloading its source file.
+- [x] Include invoice parties, line items, totals and extraction metadata in the report image.
+- [x] Update feature, API and architecture documentation to distinguish the PNG report from the original upload.
+- [x] Verify the generated PNG output, filename and that no original-document request is made.
+- [x] Run frontend syntax checks, focused lint, typecheck and production build.
 
 ## TASK-DETAIL-ORIGINAL-DOWNLOAD-03-11 — Download invoice original from details
 

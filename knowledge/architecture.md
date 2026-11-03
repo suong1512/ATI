@@ -93,7 +93,7 @@ ATI_PhAnh_group/
 | Home page | `app/page.tsx` | Displays the full-screen dashboard |
 | Dashboard | `frontend/upload.html` + `frontend/upload.css` + `frontend/upload.js` | Upload UI, statistics and up to three newest approved invoices; links to full history |
 | Invoice history | `frontend/history.html` + `frontend/history.css` + `frontend/history.js` | Complete approved-invoice list with search, filters, pagination and CSV export |
-| Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Shows information for an approved invoice and downloads its matching original document; no original preview |
+| Invoice detail | `frontend/detail.html` + `frontend/detail.css` + `frontend/detail.js` | Shows approved invoice information and generates a PNG report image from extracted data; no original preview |
 | Manual review | `frontend/review.html` + `frontend/review.css` + `frontend/review.js` | Shows original document and editable extracted fields side by side; approves invoice |
 | Legacy React components | `components/` | Alternative upload, result and history components; dashboard at `/` uses the static frontend |
 | Upload rules | `lib/uploadConfig.ts` | Accepted types/extensions, 10 MB limit, `validateUploadFile()` used by the browser |
@@ -107,7 +107,7 @@ ATI_PhAnh_group/
 | API: extract | `app/api/extract/route.ts` | Validates the upload, runs the extractor, validates with Zod, saves as pending and returns JSON |
 | API: reviews | `app/api/reviews/route.ts` and `app/api/reviews/approve/route.ts` | Lists pending records and persists edits/approval |
 | API: invoices | `app/api/invoices/route.ts`, `app/api/invoices/[recordId]/route.ts` | Lists approved invoices (default 50, or all/selected limit), returns one approved invoice / resets pending and approved records |
-| API: original document | `app/api/invoices/[recordId]/document/route.ts` | Returns a saved original PDF/image for manual review and detail-page download |
+| API: original document | `app/api/invoices/[recordId]/document/route.ts` | Returns a saved original PDF/image for manual review |
 
 ---
 

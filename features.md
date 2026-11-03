@@ -40,10 +40,10 @@
 
 ## F-03 — Invoice details page
 
-* **Description:** `detail.html?id=<recordId>` shows the information for an approved invoice, including parties, amounts and line items. The original image/PDF is downloadable from the detail page but is previewed only in the manual review page.
+* **Description:** `detail.html?id=<recordId>` shows an approved invoice's parties, amounts and line items. *Tải báo cáo* creates a PNG image from the extracted invoice report shown on the page; the original image/PDF is previewed only in the manual review page.
 * **How to test:** open an approved invoice using *Xem chi tiết* from the saved list, then select *Tải báo cáo*.
-* **Expected result:** the browser downloads the original image/PDF belonging to that invoice, keeping its original filename; the detail page does not preview the original document.
-* **Status:** Partial — approved invoice details and original document are loaded from the APIs; browser checks still require configured databases and an approved record.
+* **Expected result:** the browser downloads a `.report.png` image containing the invoice data, line items and processing information for that record.
+* **Status:** Partial — the report image is generated from the loaded invoice data; browser checks still require an approved record.
 
 ## F-04 — Stored invoices (MariaDB + MongoDB) + reset
 

@@ -228,8 +228,8 @@ Invalid limits return `400 INVALID_LIMIT`. `GET /api/invoices/:recordId` returns
 
 Returns the original uploaded PDF, PNG or JPEG with its detected media type.
 The original is stored separately from invoice extraction payloads in MongoDB's `Invoice_Documents`
-collection and is used by the manual review page for comparison and by the invoice detail page's
-*Tải báo cáo* button to download the matching original file. Records created before original-document
+collection and is used by the manual review page for comparison. The invoice detail page generates
+its PNG report image from the approved invoice data instead. Records created before original-document
 storage was added return HTTP 404.
 
 ```bash
