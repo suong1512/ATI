@@ -40,7 +40,7 @@ button, input, select { font: inherit; }
 .nav-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
 
 .main-content { min-height: 100vh; margin-left: 230px; }
-.topbar { position: sticky; z-index: 1; top: 0; display: flex; min-height: 64px; align-items: center; justify-content: flex-end; gap: 16px; border-bottom: 1px solid var(--line); background: #fff; padding: 10px clamp(18px, 2.4vw, 36px); }
+.topbar { position: sticky; z-index: 1; top: 0; display: flex; min-height: 64px; align-items: center; justify-content: flex-start; gap: 16px; border-bottom: 1px solid var(--line); background: #fff; padding: 10px clamp(18px, 2.4vw, 36px); }
 .search-box { display: flex; width: min(520px, 60%); min-width: 160px; min-height: 38px; align-items: center; gap: 8px; border: 1px solid #d2d9e8; border-radius: 6px; background: #f7f8ff; padding: 0 10px; color: #53627a; }
 .search-box input { width: 100%; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--ink); font-size: 12px; }
 

@@ -1,6 +1,11 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-SIDEBAR-ICON-SIZE-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-REVIEW-SEARCH-ALIGN-03-11**
+
+## TASK-REVIEW-SEARCH-ALIGN-03-11 — Align review search to the left
+
+- [x] Align the review page search field to the left side of the top bar.
+- [x] Validate the production build and updated top bar style.
 
 ## TASK-SIDEBAR-ICON-SIZE-03-11 — Enlarge sidebar navigation icons
 
