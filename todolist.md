@@ -1,6 +1,13 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-REVIEW-SEARCH-ALIGN-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-SIDEBAR-SETTINGS-ENTRY-03-11**
+
+## TASK-SIDEBAR-SETTINGS-ENTRY-03-11 — Add settings item to sidebar
+
+- [x] Add a gear icon and “Cài đặt” label to the bottom of upload, review and history sidebars.
+- [x] Keep the entry visual-only because no settings page or behavior exists.
+- [x] Document the visible entry and its current status.
+- [x] Run frontend production build and check all sidebar variants.
 
 ## TASK-REVIEW-SEARCH-ALIGN-03-11 — Align review search to the left
 

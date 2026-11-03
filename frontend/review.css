@@ -38,6 +38,9 @@ button, input, select { font: inherit; }
 .nav-link { display: flex; min-height: 40px; align-items: center; gap: 10px; border-radius: 5px; padding: 0 10px; color: #4b5563; font-size: 12px; }
 .nav-link:hover, .nav-link.active { background: #eef2ff; color: #1454ee; }
 .nav-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
+.sidebar-bottom { margin-top: auto; }
+.sidebar-settings { display: flex; min-height: 42px; align-items: center; gap: 10px; border-top: 1px solid var(--line); padding: 12px 10px 0; color: #4b5563; font-size: 12px; }
+.settings-icon { width: 18px; height: 18px; flex: 0 0 18px; fill: none; stroke: #60718f; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.7; }
 
 .main-content { min-height: 100vh; margin-left: 230px; }
 .topbar { position: sticky; z-index: 1; top: 0; display: flex; min-height: 64px; align-items: center; justify-content: flex-start; gap: 16px; border-bottom: 1px solid var(--line); background: #fff; padding: 10px clamp(18px, 2.4vw, 36px); }
@@ -195,6 +198,8 @@ td:first-child input { min-width: 130px; }
   .main-nav { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
   .nav-link { min-height: 34px; padding: 0 8px; font-size: 10px; }
   .nav-icon { width: 16px; height: 16px; flex-basis: 16px; }
+  .sidebar-bottom { margin-top: 8px; }
+  .sidebar-settings { min-height: 34px; padding: 0 8px; font-size: 10px; }
   .main-content { margin-left: 0; }
   .topbar { min-height: 54px; padding: 8px 12px; }
   .search-box { width: 100%; }
