@@ -2085,12 +2085,6 @@ body {
   line-height: 1.6;
 }
 
-.prototype-label {
-  color: #58677f;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
 .brand strong {
   font-size: 14px;
   line-height: 1.3;
@@ -2445,10 +2439,6 @@ td {
     height: 54px;
   }
 
-  .prototype-label {
-    font-size: 10px;
-  }
-
   .page-content {
     padding: 20px 14px 28px;
   }
@@ -2506,10 +2496,6 @@ td {
 }
 
 @media (max-width: 380px) {
-  .prototype-label {
-    display: none;
-  }
-
   .search-box {
     width: 100%;
   }

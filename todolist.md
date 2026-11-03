@@ -1,6 +1,12 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-REPORT-PNG-LAYOUT-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-REMOVE-GEMINI-PROTOTYPE-LABEL-03-11**
+
+## TASK-REMOVE-GEMINI-PROTOTYPE-LABEL-03-11 — Remove upload header badge
+
+- [x] Remove the “Bản thử nghiệm · Gemini” badge from the upload page header.
+- [x] Remove styles used only by the removed badge.
+- [x] Verify upload page build and diff.
 
 ## TASK-REPORT-PNG-LAYOUT-03-11 — Fix wrapped fields overlapping report sections
 
