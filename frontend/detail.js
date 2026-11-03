@@ -352,9 +352,11 @@
           ],
         ];
         context.font = "15px Arial, 'Segoe UI', sans-serif";
-        const partyHeights = partyFields.map((fields) =>
-          58 + fields.reduce((height, [, value]) =>
-            height + Math.max(1, wrapCanvasText(context, value, partyWidth - 40).length) * 22 + 10, 0));
+        const partyHeights = partyFields.map((fields) => fields.reduce(
+          (height, [, value]) =>
+            height + 19 + Math.max(1, wrapCanvasText(context, value, partyWidth - 40).length) * 22 + 10,
+          62 + 16,
+        ));
         const partyHeight = Math.max(...partyHeights);
         const tableHeight = 52 + 42 + itemRows.reduce((height, row) => height + row.height, 0) + 20;
         const metadataHeight = 142;

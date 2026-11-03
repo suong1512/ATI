@@ -1,6 +1,12 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-DETAIL-REPORT-PNG-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-REPORT-PNG-LAYOUT-03-11**
+
+## TASK-REPORT-PNG-LAYOUT-03-11 — Fix wrapped fields overlapping report sections
+
+- [x] Correct seller/buyer panel height to include each field label, wrapped value lines and bottom spacing.
+- [x] Verify a long wrapped address stays within its panel and the item table starts below it.
+- [x] Run frontend syntax checks, focused lint, typecheck and production build.
 
 ## TASK-DETAIL-REPORT-PNG-03-11 — Generate report image from extracted data
 
