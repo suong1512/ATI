@@ -1,6 +1,11 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-REMOVE-GEMINI-PROTOTYPE-LABEL-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-SIDEBAR-ICON-SIZE-03-11**
+
+## TASK-SIDEBAR-ICON-SIZE-03-11 — Enlarge sidebar navigation icons
+
+- [x] Slightly enlarge navigation icons across upload, review and history sidebars, including mobile sizes.
+- [x] Validate production build and CSS changes.
 
 ## TASK-REMOVE-GEMINI-PROTOTYPE-LABEL-03-11 — Remove upload header badge
 

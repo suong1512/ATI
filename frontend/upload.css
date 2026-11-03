@@ -163,9 +163,9 @@ a {
 }
 
 .nav-icon {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
   color: #60718f;
   fill: none;
   stroke: currentColor;
@@ -1239,9 +1239,9 @@ th:first-child, td:first-child {
   }
 
   .nav-icon {
-    width: 15px;
-    height: 15px;
-    flex-basis: 15px;
+    width: 17px;
+    height: 17px;
+    flex-basis: 17px;
   }
 
   .sidebar-bottom {
