@@ -1,6 +1,12 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-SIDEBAR-SETTINGS-ENTRY-03-11**
+Last updated: 03/11/2026 · Active task: **TASK-SETTINGS-GEAR-ICON-03-11**
+
+## TASK-SETTINGS-GEAR-ICON-03-11 — Match the requested settings gear icon
+
+- [x] Replace the existing settings symbol with a bolder, squared gear icon matching the supplied reference.
+- [x] Apply the same icon consistently on upload, review and history sidebars.
+- [x] Validate page markup and production build.
 
 ## TASK-SIDEBAR-SETTINGS-ENTRY-03-11 — Add settings item to sidebar
 
