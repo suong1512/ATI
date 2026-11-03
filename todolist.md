@@ -1,6 +1,14 @@
 # Todolist
 
-Last updated: 02/11/2026 · Active task: **TASK-REMOVE-SIDEBAR-UPLOAD-CTA-02-11**
+Last updated: 03/11/2026 · Active task: **TASK-DETAIL-ORIGINAL-DOWNLOAD-03-11**
+
+## TASK-DETAIL-ORIGINAL-DOWNLOAD-03-11 — Download invoice original from details
+
+- [x] Change the detail-page report button to download the original document for the current invoice.
+- [x] Preserve the source filename and report download errors without hiding invoice details.
+- [x] Update feature, API and architecture documentation.
+- [x] Simulate a detail-page download and verify it requests the selected invoice document and keeps its source filename.
+- [x] Run frontend syntax checks, typecheck, focused lint and production build.
 
 ## TASK-REMOVE-SIDEBAR-UPLOAD-CTA-02-11 — Remove sidebar upload button
 

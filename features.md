@@ -3,7 +3,7 @@
 > User-visible functionality of the project.
 > Status vocabulary: **Working · Partial · Mocked · In-Progress · Blocked**.
 > Architecture: `knowledge/architecture.md` · API details: `knowledge/apiDocs.md`
-> Last updated: 02/11/2026.
+> Last updated: 03/11/2026.
 > `Working` = verified end-to-end at HTTP/data level · `Partial` = verified at API/data level, UI not
 > click-tested in a browser yet · `Mocked` = works, but the data is simulated.
 > Evidence: `state/task_30_09_state.md` §5 and `state/task_26_10_ui_state.md` §5.
@@ -40,10 +40,10 @@
 
 ## F-03 — Invoice details page
 
-* **Description:** `detail.html?id=<recordId>` shows the information for an approved invoice, including parties, amounts and line items. The original image/PDF is shown only in the manual review page.
-* **How to test:** open an approved invoice using *Xem chi tiết* from the saved list.
-* **Expected result:** the approved invoice details and JSON download are shown without the original image/PDF.
-* **Status:** Partial — approved invoice details are loaded from the API; browser checks still require configured databases and an approved record.
+* **Description:** `detail.html?id=<recordId>` shows the information for an approved invoice, including parties, amounts and line items. The original image/PDF is downloadable from the detail page but is previewed only in the manual review page.
+* **How to test:** open an approved invoice using *Xem chi tiết* from the saved list, then select *Tải báo cáo*.
+* **Expected result:** the browser downloads the original image/PDF belonging to that invoice, keeping its original filename; the detail page does not preview the original document.
+* **Status:** Partial — approved invoice details and original document are loaded from the APIs; browser checks still require configured databases and an approved record.
 
 ## F-04 — Stored invoices (MariaDB + MongoDB) + reset
 

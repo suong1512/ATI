@@ -1,6 +1,6 @@
       const detailMessage = document.querySelector("#detail-message");
       const detailContent = document.querySelector("#detail-content");
-      const downloadButton = document.querySelector("#download-json");
+      const downloadButton = document.querySelector("#download-report");
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
       const apiOrigin = standalonePreviewPorts.includes(location.port) || location.protocol === "file:"
         ? `${location.protocol === "https:" ? "https:" : "http:"}//${location.hostname || "localhost"}:3000`
@@ -257,15 +257,43 @@
         }
       }
 
-      downloadButton.addEventListener("click", () => {
+      downloadButton.addEventListener("click", async () => {
         if (!currentRecord) return;
-        const blob = new Blob([JSON.stringify(currentRecord, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${currentRecord.source.fileName.replace(/\.[^.]+$/, "")}.invoice.json`;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(url), 0);
+
+        downloadButton.disabled = true;
+        downloadButton.textContent = "Đang tải...";
+        detailMessage.hidden = true;
+        try {
+          const response = await fetch(
+            `${apiOrigin}/api/invoices/${encodeURIComponent(currentRecord.recordId)}/document`,
+            { cache: "no-store" },
+          );
+          if (!response.ok) {
+            throw new Error(response.status === 404
+              ? "Không tìm thấy tệp báo cáo gốc của hóa đơn này."
+              : `Máy chủ không thể tải tệp báo cáo (HTTP ${response.status}).`);
+          }
+
+          const blob = await response.blob();
+          if (blob.size === 0) throw new Error("Tệp báo cáo tải về bị trống.");
+
+          const fileName = currentRecord.source.fileName
+            .split(/[\\/]/)
+            .pop()
+            .replace(/[<>:"|?*\u0000-\u001f]/g, "_") || "bao-cao";
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileName;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+        } catch (error) {
+          detailMessage.textContent = `Không thể tải báo cáo: ${error.message || "Đã xảy ra lỗi."}`;
+          detailMessage.hidden = false;
+        } finally {
+          downloadButton.disabled = false;
+          downloadButton.textContent = "Tải báo cáo";
+        }
       });
 
       loadInvoice();

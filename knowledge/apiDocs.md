@@ -3,7 +3,7 @@
 > Internal API exposed by the Next.js App Router (`app/api/**`).
 > `POST /api/extract` runs local OCR and sends prepared documents to Google's Gemini API; Vision requires `GEMINI_API_KEY`.
 > Response contract source of truth: `lib/invoiceSchema.ts`.
-> Last updated: 30/10/2026
+> Last updated: 03/11/2026
 
 ---
 
@@ -226,9 +226,10 @@ Invalid limits return `400 INVALID_LIMIT`. `GET /api/invoices/:recordId` returns
 
 ## 6. `GET /api/invoices/:recordId/document`
 
-Returns the original uploaded PDF, PNG or JPEG with its detected media type for inline preview.
+Returns the original uploaded PDF, PNG or JPEG with its detected media type.
 The original is stored separately from invoice extraction payloads in MongoDB's `Invoice_Documents`
-collection and is used by the manual review page for comparison. Records created before original-document
+collection and is used by the manual review page for comparison and by the invoice detail page's
+*Tải báo cáo* button to download the matching original file. Records created before original-document
 storage was added return HTTP 404.
 
 ```bash
