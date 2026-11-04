@@ -19,7 +19,7 @@
   3. Choose a readable invoice PDF/JPG/PNG; valid files upload automatically.
   4. Drag a `.txt`/`.docx` file, or a supported extension paired with a conflicting MIME type, into the box to see the client-side rejection message.
   5. Try an upload while the API is unavailable or with an unsupported/unreadable document to see an upload error message.
-* **Expected result:** Unsupported or mismatched file formats and upload/processing failures show “File không hợp lệ hoặc không đọc được file.” PDFs pass through unchanged; PNG/JPEG images are oriented using EXIF, resized only when larger than 2400×3200, flattened on white and temporarily converted to JPEG quality 92. Saved source metadata/hash still describe the original file. Processing status appears, followed by extracted fields and a pending-review link. The invoice is not listed as saved until approved. Missing Gemini configuration and unreadable images also show the same short error.
+* **Expected result:** Unsupported or mismatched formats show “File không hợp lệ.” Files that cannot be read or are not recognized as invoices show “Không đọc được file.” Service/configuration failures show a separate retry/configuration message. PDFs pass through unchanged; PNG/JPEG images are oriented using EXIF, resized only when larger than 2400×3200, flattened on white and temporarily converted to JPEG quality 92. Saved source metadata/hash still describe the original file. Processing status appears, followed by extracted fields and a pending-review link. The invoice is not listed as saved until approved.
 * **Status:** Partial — preprocessing is implemented; live Gemini upload requires a configured key.
 
 ## F-02 — Structured invoice data (Gemini extraction)

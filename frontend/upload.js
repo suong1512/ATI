@@ -21,7 +21,8 @@
       const missingValue = "_";
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
-      const invalidFileMessage = "File không hợp lệ hoặc không đọc được file.";
+      const invalidFileMessage = "File không hợp lệ.";
+      const unreadableFileMessage = "Không đọc được file.";
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
       const apiOrigin = standalonePreviewPorts.includes(location.port) || location.protocol === "file:"
         ? `${location.protocol === "https:" ? "https:" : "http:"}//${location.hostname || "localhost"}:3000`
@@ -83,6 +84,25 @@
         uploadAlert.querySelector(".alert-symbol").textContent = success ? "✓" : "⊗";
         uploadAlert.querySelector("[data-open-picker]").hidden = success;
         uploadAlert.hidden = false;
+      }
+
+      function getUploadErrorMessage(code) {
+        if (["EMPTY_FILE", "FILE_TOO_LARGE", "NO_FILE", "UNSUPPORTED_TYPE"].includes(code)) {
+          return invalidFileMessage;
+        }
+        if ([
+          "DOCUMENT_PREPROCESSING_FAILED",
+          "GEMINI_NO_OUTPUT",
+          "GEMINI_REJECTED_FILE",
+          "INCOMPLETE_EXTRACTION",
+          "OCR_FAILED",
+        ].includes(code)) {
+          return unreadableFileMessage;
+        }
+        if (code === "GEMINI_NOT_CONFIGURED") {
+          return "Dịch vụ xử lý chưa được cấu hình.";
+        }
+        return "Không thể xử lý file. Hãy thử lại.";
       }
 
       function normalizeSearchText(value) {
@@ -383,9 +403,11 @@
         } catch (error) {
           console.error("[upload] File upload or extraction failed.", error);
           incrementInvalidCount();
-          selectedFile.textContent = invalidFileMessage;
+          const code = error instanceof Error ? error.message : "";
+          const message = getUploadErrorMessage(code);
+          selectedFile.textContent = message;
           selectedFile.classList.add("file-error");
-          showUploadAlert(invalidFileMessage);
+          showUploadAlert(message);
         } finally {
           setQueue();
           fileInput.value = "";

@@ -1,11 +1,12 @@
 # Todolist
 
-Last updated: 04/11/2026 · Active task: **TASK-UPLOAD-ERROR-COPY-04-11**
+Last updated: 04/11/2026 · Active task: **TASK-UPLOAD-ERROR-CATEGORIES-04-11**
 
-## TASK-UPLOAD-ERROR-COPY-04-11 — Use the requested upload error message
+## TASK-UPLOAD-ERROR-CATEGORIES-04-11 — Separate invalid format from unreadable file
 
-- [x] Use “File không hợp lệ hoặc không đọc được file.” for invalid files and upload/processing failures.
-- [x] Keep technical error details in the browser log, not in the notification.
+- [x] Show “File không hợp lệ.” for invalid format, empty file, or size validation failures.
+- [x] Show “Không đọc được file.” for unprocessable documents or documents not recognized as invoices.
+- [x] Keep service/configuration failures separate from file errors.
 - [x] Run focused frontend syntax, lint, type checks and production build.
 
 ## TASK-UPLOAD-ERROR-NOTIFICATIONS-04-11 — Show errors for invalid files and failed uploads
