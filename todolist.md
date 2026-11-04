@@ -1,6 +1,12 @@
 # Todolist
 
-Last updated: 04/11/2026 · Active task: **TASK-UPLOAD-ERROR-CATEGORIES-04-11**
+Last updated: 04/11/2026 · Active task: **TASK-REMOVE-UPLOAD-SIDEBAR-NOTE-04-11**
+
+## TASK-REMOVE-UPLOAD-SIDEBAR-NOTE-04-11 — Remove the upload sidebar note
+
+- [x] Remove the “Bản thử nghiệm / Hóa đơn lưu trong database” note from the upload page.
+- [x] Remove the unused note styles while preserving the settings entry.
+- [x] Check the upload page build and confirm the settings entry remains.
 
 ## TASK-UPLOAD-ERROR-CATEGORIES-04-11 — Separate invalid format from unreadable file
 
