@@ -106,21 +106,37 @@
 
       function showFile(file) {
         if (!file) return;
-        const acceptedType = ["application/pdf", "image/jpeg", "image/png"].includes(file.type);
+        const extensionsByType = {
+          "application/pdf": [".pdf"],
+          "image/jpeg": [".jpg", ".jpeg"],
+          "image/png": [".png"],
+        };
+        const extension = file.name.match(/\.[^.]+$/)?.[0].toLowerCase() || "";
+        const extensionsForType = extensionsByType[file.type];
+        const acceptedType = Boolean(extensionsForType);
         const acceptedExtension = /\.(pdf|jpe?g|png)$/i.test(file.name);
+        const hasUnsupportedType = Boolean(file.type)
+          && file.type !== "application/octet-stream"
+          && !acceptedType;
+        const formatMismatch = acceptedType
+          && extension
+          && !extensionsForType.includes(extension);
         const isEmpty = file.size === 0;
         const isTooLarge = file.size > maxFileSize;
         selectedFile.textContent = "";
         selectedFile.classList.remove("file-error");
         extractionResult.hidden = true;
         openReviewLink.hidden = true;
-        if ((!acceptedType && !acceptedExtension) || isEmpty || isTooLarge) {
+        if ((!acceptedType && !acceptedExtension) || hasUnsupportedType || formatMismatch || isEmpty || isTooLarge) {
           incrementInvalidCount();
-          showUploadAlert(isTooLarge
+          const errorMessage = isTooLarge
             ? `Tệp "${file.name}" vượt quá giới hạn ${maxFileSizeMb}MB. Vui lòng chọn tệp nhỏ hơn.`
             : isEmpty
               ? `Tệp "${file.name}" bị rỗng. Vui lòng chọn một tệp khác.`
-            : `Tệp "${file.name}" không hợp lệ. Vui lòng chọn PDF, JPG hoặc PNG.`);
+              : `Định dạng tệp "${file.name}" không hợp lệ. Vui lòng chọn tệp PDF, JPG hoặc PNG có phần mở rộng khớp với định dạng tệp.`;
+          selectedFile.textContent = errorMessage;
+          selectedFile.classList.add("file-error");
+          showUploadAlert(errorMessage);
           fileInput.value = "";
           return;
         }
@@ -369,9 +385,12 @@
           }
         } catch (error) {
           incrementInvalidCount();
-          selectedFile.textContent = `Không thể tải hoặc trích xuất tệp: ${error.message}`;
+          const message = error instanceof Error && error.message
+            ? error.message
+            : "Đã xảy ra lỗi không xác định. Vui lòng kiểm tra kết nối và thử tải lại.";
+          selectedFile.textContent = `Không thể tải hoặc trích xuất tệp "${file.name}": ${message}`;
           selectedFile.classList.add("file-error");
-          showUploadAlert(error.message);
+          showUploadAlert(`Tải tệp "${file.name}" thất bại: ${message}`);
         } finally {
           setQueue();
           fileInput.value = "";

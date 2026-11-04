@@ -17,8 +17,9 @@
   1. `npm run dev` → open <http://localhost:3000>.
   2. Drag `samples/sample-invoice.pdf` onto the box (or click it and pick the file).
   3. Choose a readable invoice PDF/JPG/PNG; valid files upload automatically.
-  4. Drag a `.txt`/`.docx` file into the box to see the client-side rejection message.
-* **Expected result:** PDFs pass through unchanged; PNG/JPEG images are oriented using EXIF, resized only when larger than 2400×3200, flattened on white and temporarily converted to JPEG quality 92. Saved source metadata/hash still describe the original file. Processing status appears, followed by extracted fields and a pending-review link. The invoice is not listed as saved until approved. Missing Gemini configuration shows an explicit error; unreadable images return `DOCUMENT_PREPROCESSING_FAILED`.
+  4. Drag a `.txt`/`.docx` file, or a supported extension paired with a conflicting MIME type, into the box to see the client-side rejection message.
+  5. Try an upload while the API is unavailable or with an unsupported/unreadable document to see an upload error message.
+* **Expected result:** Unsupported or mismatched file formats are rejected with a visible error alert and inline file message. Upload/network/server failures show an error alert and inline failure message. PDFs pass through unchanged; PNG/JPEG images are oriented using EXIF, resized only when larger than 2400×3200, flattened on white and temporarily converted to JPEG quality 92. Saved source metadata/hash still describe the original file. Processing status appears, followed by extracted fields and a pending-review link. The invoice is not listed as saved until approved. Missing Gemini configuration shows an explicit error; unreadable images return `DOCUMENT_PREPROCESSING_FAILED`.
 * **Status:** Partial — preprocessing is implemented; live Gemini upload requires a configured key.
 
 ## F-02 — Structured invoice data (Gemini extraction)

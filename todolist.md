@@ -1,6 +1,13 @@
 # Todolist
 
-Last updated: 03/11/2026 · Active task: **TASK-SETTINGS-GEAR-ICON-03-11**
+Last updated: 04/11/2026 · Active task: **TASK-UPLOAD-ERROR-NOTIFICATIONS-04-11**
+
+## TASK-UPLOAD-ERROR-NOTIFICATIONS-04-11 — Show errors for invalid files and failed uploads
+
+- [x] Reject unsupported and conflicting file formats with visible error notifications.
+- [x] Show clear error alerts and inline messages when upload or extraction fails.
+- [x] Update the upload feature's manual test steps.
+- [x] Run focused frontend syntax, lint, type checks and production build.
 
 ## TASK-SETTINGS-GEAR-ICON-03-11 — Match the requested settings gear icon
 
