@@ -21,6 +21,7 @@
       const missingValue = "_";
       const maxFileSizeMb = 10;
       const maxFileSize = maxFileSizeMb * 1024 * 1024;
+      const invalidFileMessage = "File không hợp lệ hoặc không đọc được file.";
       const standalonePreviewPorts = ["4173", "5173", "5500", "5501"];
       const apiOrigin = standalonePreviewPorts.includes(location.port) || location.protocol === "file:"
         ? `${location.protocol === "https:" ? "https:" : "http:"}//${location.hostname || "localhost"}:3000`
@@ -84,23 +85,6 @@
         uploadAlert.hidden = false;
       }
 
-      function getUploadErrorMessage(code) {
-        const messages = {
-          EMPTY_FILE: "Tệp rỗng. Hãy chọn tệp khác.",
-          FILE_TOO_LARGE: "Tệp vượt quá giới hạn 10MB.",
-          UNSUPPORTED_TYPE: "Định dạng không hỗ trợ. Chọn PDF, JPG hoặc PNG.",
-          GEMINI_NOT_CONFIGURED: "Dịch vụ xử lý chưa được cấu hình.",
-          GEMINI_TIMEOUT: "Xử lý quá thời gian. Hãy thử lại.",
-          GEMINI_REJECTED_FILE: "Không đọc được tệp. Hãy thử tệp khác.",
-          GEMINI_NO_OUTPUT: "Không nhận diện được hóa đơn trong tệp.",
-          DATABASE_UNAVAILABLE: "Không thể lưu dữ liệu. Hãy thử lại.",
-        };
-        if (["GEMINI_UNAVAILABLE", "GEMINI_RATE_LIMITED", "GEMINI_PROVIDER_ERROR"].includes(code)) {
-          return "Dịch vụ đang bận. Hãy thử lại sau.";
-        }
-        return messages[code] || "Không thể tải tệp. Hãy thử lại.";
-      }
-
       function normalizeSearchText(value) {
         return String(value || "")
           .normalize("NFD")
@@ -146,14 +130,9 @@
         openReviewLink.hidden = true;
         if ((!acceptedType && !acceptedExtension) || hasUnsupportedType || formatMismatch || isEmpty || isTooLarge) {
           incrementInvalidCount();
-          const errorMessage = isTooLarge
-            ? `Tệp vượt quá giới hạn ${maxFileSizeMb}MB.`
-            : isEmpty
-              ? "Tệp rỗng. Hãy chọn tệp khác."
-              : "Định dạng không hỗ trợ. Chọn PDF, JPG hoặc PNG.";
-          selectedFile.textContent = errorMessage;
+          selectedFile.textContent = invalidFileMessage;
           selectedFile.classList.add("file-error");
-          showUploadAlert(errorMessage);
+          showUploadAlert(invalidFileMessage);
           fileInput.value = "";
           return;
         }
@@ -382,15 +361,13 @@
 
       async function uploadFile(file) {
         setQueue(file.name);
-        let failureMessage = "";
         try {
           const formData = new FormData();
           formData.append("file", file);
           const response = await fetch(`${apiOrigin}/api/extract`, { method: "POST", body: formData });
           const result = await readJsonResponse(response, "/api/extract");
           if (!response.ok || !result.ok || !result.data) {
-            failureMessage = getUploadErrorMessage(result.error?.code);
-            throw new Error(failureMessage);
+            throw new Error(result.error?.code || `HTTP ${response.status}`);
           }
           renderExtraction(result.data);
           selectedFile.textContent = `${file.name} · Đã trích xuất, đang chờ duyệt`;
@@ -406,10 +383,9 @@
         } catch (error) {
           console.error("[upload] File upload or extraction failed.", error);
           incrementInvalidCount();
-          const message = failureMessage || "Không thể tải tệp. Hãy thử lại.";
-          selectedFile.textContent = message;
+          selectedFile.textContent = invalidFileMessage;
           selectedFile.classList.add("file-error");
-          showUploadAlert(message);
+          showUploadAlert(invalidFileMessage);
         } finally {
           setQueue();
           fileInput.value = "";

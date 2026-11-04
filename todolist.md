@@ -1,11 +1,11 @@
 # Todolist
 
-Last updated: 04/11/2026 · Active task: **TASK-CONCISE-UPLOAD-ERRORS-04-11**
+Last updated: 04/11/2026 · Active task: **TASK-UPLOAD-ERROR-COPY-04-11**
 
-## TASK-CONCISE-UPLOAD-ERRORS-04-11 — Keep upload error notifications short
+## TASK-UPLOAD-ERROR-COPY-04-11 — Use the requested upload error message
 
-- [x] Replace detailed upload errors with concise Vietnamese messages without HTTP status codes or filenames.
-- [x] Keep validation-specific messages and a generic message for unexpected upload failures.
+- [x] Use “File không hợp lệ hoặc không đọc được file.” for invalid files and upload/processing failures.
+- [x] Keep technical error details in the browser log, not in the notification.
 - [x] Run focused frontend syntax, lint, type checks and production build.
 
 ## TASK-UPLOAD-ERROR-NOTIFICATIONS-04-11 — Show errors for invalid files and failed uploads
